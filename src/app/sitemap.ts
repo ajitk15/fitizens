@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
-import { programs, site } from "@/content/site";
+import { getPrograms, getPosts, getSite } from "@/sanity/queries";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [programs, posts, site] = await Promise.all([getPrograms(), getPosts(), getSite()]);
   const base = site.url.replace(/\/$/, "");
-  const routes = ["", "/about", "/programs", "/transformations", "/contact"];
+  const routes = ["", "/about", "/programs", "/transformations", "/tools", "/blog", "/contact"];
 
   const staticPages = routes.map((path) => ({
     url: `${base}${path}`,
@@ -19,5 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...programPages];
+  const postPages = posts.map((p) => ({
+    url: `${base}/blog/${p.slug}`,
+    lastModified: new Date(p.publishedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...programPages, ...postPages];
 }

@@ -3,7 +3,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { ButtonLink } from "@/components/Button";
 import { Reveal } from "@/components/Reveal";
 import { TransformationsGallery } from "@/components/TransformationsGallery";
-import { transformations } from "@/content/site";
+import { getTransformations } from "@/sanity/queries";
 
 export const metadata: Metadata = {
   title: "Transformations",
@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/transformations" },
 };
 
-export default function TransformationsPage() {
+export default async function TransformationsPage() {
+  const transformations = await getTransformations();
   return (
     <>
       <section className="relative overflow-hidden pt-28">

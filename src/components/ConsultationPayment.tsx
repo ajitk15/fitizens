@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Script from "next/script";
 import { Button } from "./Button";
-import { consultation } from "@/content/site";
+import { consultation as fallbackConsultation } from "@/content/site";
+
+interface ConsultationPaymentProps {
+  /** Consultation details (from the CMS); falls back to bundled defaults. */
+  consultation?: { price: number; durationLabel: string; note: string };
+}
 
 /**
  * Razorpay consultation-payment button.
@@ -30,7 +35,7 @@ declare global {
   }
 }
 
-export function ConsultationPayment() {
+export function ConsultationPayment({ consultation = fallbackConsultation }: ConsultationPaymentProps = {}) {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 

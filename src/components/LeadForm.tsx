@@ -1,9 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { goalLabels, type Goal } from "@/content/site";
+
+const GOAL_VALUES: Goal[] = ["fat-loss", "muscle-gain", "recomp", "lifestyle"];
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -40,6 +42,17 @@ export function LeadForm() {
   const [error, setError] = useState("");
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
+
+  // Pre-fill the goal when arriving from the program-finder quiz (/contact?goal=…).
+  // One-time sync from the URL (an external system) on mount; intentionally runs once.
+  useEffect(() => {
+    const g = new URLSearchParams(window.location.search).get("goal");
+    if (!g || !(GOAL_VALUES as string[]).includes(g)) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setForm((f) => ({ ...f, goal: g as Goal }));
+    setStep(1);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   // Step 1 needs a goal; step 2 needs name + a valid-ish whatsapp number.
   const canContinue =

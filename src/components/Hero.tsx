@@ -1,9 +1,10 @@
 import Image from "next/image";
 import { ButtonLink } from "./Button";
 import { Reveal } from "./Reveal";
-import { trainer } from "@/content/site";
+import { getTrainer } from "@/sanity/queries";
 
-export function Hero() {
+export async function Hero() {
+  const trainer = await getTrainer();
   return (
     <section className="relative overflow-hidden pt-16">
       <div className="accent-radial pointer-events-none absolute inset-0" aria-hidden />

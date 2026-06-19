@@ -7,6 +7,8 @@
  * the client supplies final bio text, testimonials and before/after pairs.
  */
 
+import type { PortableTextBlock } from "@portabletext/types";
+
 export type Goal = "fat-loss" | "muscle-gain" | "recomp" | "lifestyle";
 
 export interface Trainer {
@@ -86,6 +88,23 @@ export interface SocialLink {
   url: string;
   handle: string;
   followers?: number;
+}
+
+/** Blog — card/listing shape. */
+export interface PostListItem {
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverImage?: string;
+  category?: string;
+  tags?: string[];
+  readTimeMin?: number;
+  publishedAt: string;
+}
+
+/** Blog — full article (adds the Portable Text body). */
+export interface Post extends PostListItem {
+  body: PortableTextBlock[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -376,13 +395,12 @@ export const navLinks = [
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
   { label: "Transformations", href: "/transformations" },
+  { label: "Tools", href: "/tools" },
+  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 
 /** Helpers */
-export const getProgram = (slug: string) =>
-  programs.find((p) => p.slug === slug);
-
 export const goalLabels: Record<Goal, string> = {
   "fat-loss": "Fat Loss",
   "muscle-gain": "Muscle Gain",

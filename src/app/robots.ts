@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { site } from "@/content/site";
+import { getSite } from "@/sanity/queries";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const site = await getSite();
   const base = site.url.replace(/\/$/, "");
   return {
-    rules: { userAgent: "*", allow: "/" },
+    rules: { userAgent: "*", allow: "/", disallow: "/studio/" },
     sitemap: `${base}/sitemap.xml`,
   };
 }

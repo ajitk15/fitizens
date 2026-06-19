@@ -4,15 +4,19 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { StatsBar } from "@/components/StatsBar";
-import { trainer } from "@/content/site";
+import { getTrainer } from "@/sanity/queries";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: `${trainer.fullName} — ${trainer.tagline} in ${trainer.location}. ${trainer.shortBio}`,
-  alternates: { canonical: "/about" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const trainer = await getTrainer();
+  return {
+    title: "About",
+    description: `${trainer.fullName} — ${trainer.tagline} in ${trainer.location}. ${trainer.shortBio}`,
+    alternates: { canonical: "/about" },
+  };
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const trainer = await getTrainer();
   return (
     <>
       <section className="relative overflow-hidden pt-24">

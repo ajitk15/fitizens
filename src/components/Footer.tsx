@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { navLinks, socials, trainer, site } from "@/content/site";
+import { navLinks } from "@/content/site";
+import { getTrainer, getSocials, getSite } from "@/sanity/queries";
 
-export function Footer() {
+export async function Footer() {
+  const [trainer, socials, site] = await Promise.all([
+    getTrainer(),
+    getSocials(),
+    getSite(),
+  ]);
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-line bg-ink-soft">

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consultation } from "@/content/site";
+import { getConsultation } from "@/sanity/queries";
 
 /**
  * Creates a Razorpay order for the consultation fee.
@@ -22,6 +22,7 @@ export async function POST() {
     return NextResponse.json({ enabled: false });
   }
 
+  const consultation = await getConsultation();
   const amount = consultation.price * 100; // Razorpay expects paise
 
   try {

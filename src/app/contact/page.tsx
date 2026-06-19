@@ -4,7 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { LeadForm } from "@/components/LeadForm";
 import { CalendlyEmbed } from "@/components/CalendlyEmbed";
 import { ConsultationPayment } from "@/components/ConsultationPayment";
-import { trainer, site, consultation } from "@/content/site";
+import { getTrainer, getSite, getConsultation } from "@/sanity/queries";
 
 export const metadata: Metadata = {
   title: "Contact & Book a Consultation",
@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [trainer, site, consultation] = await Promise.all([
+    getTrainer(),
+    getSite(),
+    getConsultation(),
+  ]);
   return (
     <>
       <section className="relative overflow-hidden pt-28">
@@ -37,7 +42,7 @@ export default function ContactPage() {
           {/* Booking + payment + direct contact */}
           <div className="space-y-8">
             <Reveal delay={0.1}>
-              <ConsultationPayment />
+              <ConsultationPayment consultation={consultation} />
             </Reveal>
 
             <Reveal delay={0.15}>
@@ -45,7 +50,7 @@ export default function ContactPage() {
                 <h3 className="mb-3 font-display text-xl uppercase">
                   Or pick a slot directly
                 </h3>
-                <CalendlyEmbed />
+                <CalendlyEmbed url={site.calendlyUrl} />
               </div>
             </Reveal>
 

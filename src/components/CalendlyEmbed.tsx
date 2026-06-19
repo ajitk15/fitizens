@@ -3,14 +3,17 @@
 import Script from "next/script";
 import { site } from "@/content/site";
 
+interface CalendlyEmbedProps {
+  /** Scheduling URL (from the CMS / env); falls back to the bundled default. */
+  url?: string;
+}
+
 /**
  * Inline Calendly widget. Loads Calendly's embed script and mounts the widget
- * at the configured URL. When NEXT_PUBLIC_CALENDLY_URL is not set yet, shows a
- * graceful placeholder so the page never looks broken before the client's
- * scheduling account is connected.
+ * at the configured URL. When no URL is set yet, shows a graceful placeholder so
+ * the page never looks broken before the client's scheduling account is connected.
  */
-export function CalendlyEmbed() {
-  const url = site.calendlyUrl;
+export function CalendlyEmbed({ url = site.calendlyUrl }: CalendlyEmbedProps = {}) {
 
   if (!url) {
     return (

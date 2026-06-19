@@ -4,19 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
-import { programs, getProgram, goalLabels, consultation } from "@/content/site";
+import { goalLabels } from "@/content/site";
+import { getPrograms, getProgram, getConsultation } from "@/sanity/queries";
 
 interface Params {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const programs = await getPrograms();
   return programs.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const program = getProgram(slug);
+  const program = await getProgram(slug);
   if (!program) return { title: "Program not found" };
   return {
     title: program.title,
@@ -27,7 +29,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ProgramDetailPage({ params }: Params) {
   const { slug } = await params;
-  const program = getProgram(slug);
+  const [program, consultation] = await Promise.all([
+    getProgram(slug),
+    getConsultation(),
+  ]);
   if (!program) notFound();
 
   return (

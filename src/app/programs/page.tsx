@@ -4,7 +4,8 @@ import { Reveal } from "@/components/Reveal";
 import { ProgramCard } from "@/components/ProgramCard";
 import { ButtonLink } from "@/components/Button";
 import { FaqAccordion } from "@/components/FaqAccordion";
-import { programs, faqs, consultation } from "@/content/site";
+import { ProgramFinder } from "@/components/ProgramFinder";
+import { getPrograms, getFaqs, getConsultation } from "@/sanity/queries";
 
 export const metadata: Metadata = {
   title: "Programs & Packages",
@@ -13,9 +14,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/programs" },
 };
 
-const packageFaqs = faqs.filter((f) => f.category === "Package Details" || f.category === "Services Provided");
-
-export default function ProgramsPage() {
+export default async function ProgramsPage() {
+  const [programs, faqs, consultation] = await Promise.all([
+    getPrograms(),
+    getFaqs(),
+    getConsultation(),
+  ]);
+  const packageFaqs = faqs.filter(
+    (f) => f.category === "Package Details" || f.category === "Services Provided",
+  );
   return (
     <>
       <section className="relative overflow-hidden pt-28">
@@ -28,6 +35,16 @@ export default function ProgramsPage() {
             subtitle="Every package includes the same complete, hands-on support. The longer the plan, the more time we have for a full, lasting transformation. Pricing is shared during your consultation."
           />
         </div>
+      </section>
+
+      {/* Program finder quiz */}
+      <section className="mx-auto max-w-2xl px-4 pb-4 sm:px-6">
+        <Reveal>
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            Not sure which to pick?
+          </p>
+          <ProgramFinder programs={programs} />
+        </Reveal>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">

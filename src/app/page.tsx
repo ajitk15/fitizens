@@ -9,14 +9,15 @@ import { TransformationsGallery } from "@/components/TransformationsGallery";
 import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { FaqJsonLd } from "@/components/FaqJsonLd";
+import { InstagramFeed } from "@/components/InstagramFeed";
 import {
-  programs,
-  transformations,
-  testimonials,
-  faqs,
-  trainer,
-  consultation,
-} from "@/content/site";
+  getPrograms,
+  getTransformations,
+  getTestimonials,
+  getFaqs,
+  getTrainer,
+  getConsultation,
+} from "@/sanity/queries";
 
 const steps = [
   {
@@ -41,7 +42,16 @@ const steps = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [programs, transformations, testimonials, faqs, trainer, consultation] =
+    await Promise.all([
+      getPrograms(),
+      getTransformations(),
+      getTestimonials(),
+      getFaqs(),
+      getTrainer(),
+      getConsultation(),
+    ]);
   return (
     <>
       <Hero />
@@ -169,6 +179,14 @@ export default function HomePage() {
           <FaqAccordion faqs={faqs} />
           <FaqJsonLd faqs={faqs} />
         </div>
+      </section>
+
+      {/* Instagram */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <SectionHeading align="center" eyebrow="Instagram" title="Follow the journey" className="mb-12" />
+        <Reveal>
+          <InstagramFeed />
+        </Reveal>
       </section>
 
       {/* Final CTA */}

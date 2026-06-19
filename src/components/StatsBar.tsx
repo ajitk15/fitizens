@@ -1,8 +1,9 @@
-import { stats } from "@/content/site";
+import { getStats } from "@/sanity/queries";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { Reveal } from "./Reveal";
 
-export function StatsBar() {
+export async function StatsBar() {
+  const stats = await getStats();
   return (
     <section className="border-y border-line bg-ink-soft">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">

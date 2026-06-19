@@ -1,7 +1,8 @@
-import { site } from "@/content/site";
+import { getSite } from "@/sanity/queries";
 
 /** Floating WhatsApp button — high-converting for the India market. */
-export function WhatsAppButton() {
+export async function WhatsAppButton() {
+  const site = await getSite();
   return (
     <a
       href={site.whatsappLink}
