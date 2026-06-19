@@ -61,7 +61,7 @@ export async function Hero() {
               fill
               priority
               sizes="(max-width: 1024px) 90vw, 440px"
-              className="object-cover"
+              className="object-cover object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 rounded-xl border border-line bg-ink/80 px-4 py-3 backdrop-blur">
