@@ -77,7 +77,7 @@ export function StatsEditor({ name, initial }: { name: string; initial: StatRow[
             type="button"
             aria-label="Remove stat"
             onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}
-            className="flex h-9 w-9 items-center justify-center self-center rounded-lg border border-line text-muted hover:border-red-400/60 hover:text-red-400"
+            className="flex h-9 w-9 items-center justify-center self-center rounded-lg border border-line text-muted hover:border-bad/60 hover:text-bad"
           >
             ×
           </button>

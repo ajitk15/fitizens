@@ -29,7 +29,7 @@ export default async function OrdersAdminPage() {
             <td className="px-4 py-3 text-muted">{o.kind}</td>
             <td className="px-4 py-3">
               <StatusPill value={o.status} />
-              {o.error && <span className="block text-xs text-red-400">{o.error}</span>}
+              {o.error && <span className="block text-xs text-bad">{o.error}</span>}
             </td>
             <td className="px-4 py-3 text-xs text-muted">
               {new Date(o.updatedAt).toLocaleString("en-IN")}

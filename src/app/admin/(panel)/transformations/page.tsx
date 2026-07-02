@@ -55,8 +55,8 @@ export default async function TransformationsAdminPage({
             <Textarea name="summary" defaultValue={editing?.summary} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <ImageUploadField name="beforeImage" label="Before photo" defaultValue={editing?.beforeImage ?? ""} />
-            <ImageUploadField name="afterImage" label="After photo" defaultValue={editing?.afterImage ?? ""} />
+            <ImageUploadField name="beforeImage" label="Before photo" kind="transformation" defaultValue={editing?.beforeImage ?? ""} />
+            <ImageUploadField name="afterImage" label="After photo" kind="transformation" defaultValue={editing?.afterImage ?? ""} />
           </div>
           <div className="flex gap-6">
             <Checkbox name="consentGiven" label="Client consent on file" defaultChecked={editing?.consentGiven ?? false} />

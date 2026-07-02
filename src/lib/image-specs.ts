@@ -1,0 +1,30 @@
+/**
+ * One source of truth for image sizing: the admin shows the recommendation,
+ * and /api/admin/upload resizes anything larger down to these bounds
+ * (aspect preserved — display components crop with object-cover).
+ */
+export interface ImageSpec {
+  /** Processing bounds — uploads are downscaled to fit inside. */
+  maxW: number;
+  maxH: number;
+  /** Human hint shown in admin upload fields. */
+  label: string;
+}
+
+export const IMAGE_SPECS = {
+  profile: { maxW: 1080, maxH: 1440, label: "Best: 1080×1440 (3:4 portrait)" },
+  gallery: { maxW: 900, maxH: 1200, label: "Best: 900×1200 (3:4 portrait)" },
+  program: { maxW: 1600, maxH: 1200, label: "Best: 1600×1200 (4:3)" },
+  transformation: { maxW: 1000, maxH: 1250, label: "Best: 1000×1250 (4:5 portrait)" },
+  testimonial: { maxW: 400, maxH: 400, label: "Best: 400×400 (square)" },
+  post: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
+  event: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
+} as const satisfies Record<string, ImageSpec>;
+
+export type ImageKind = keyof typeof IMAGE_SPECS;
+
+export const DEFAULT_KIND: ImageKind = "program";
+
+export function imageSpec(kind: string | null | undefined): ImageSpec {
+  return IMAGE_SPECS[(kind ?? DEFAULT_KIND) as ImageKind] ?? IMAGE_SPECS[DEFAULT_KIND];
+}

@@ -21,7 +21,7 @@ export default async function EditPostPage({
     <>
       <AdminHeading title={`Edit: ${post.title}`} />
       {saved && (
-        <p className="mb-4 rounded-lg border border-green-400/40 bg-green-400/10 px-4 py-2 text-sm text-green-400">
+        <p className="mb-4 rounded-lg border border-ok/40 bg-ok/10 px-4 py-2 text-sm text-ok">
           Saved.{" "}
           {post.isPublished && (
             <Link href={`/blog/${post.slug}`} target="_blank" className="underline">

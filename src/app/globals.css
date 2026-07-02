@@ -15,6 +15,11 @@
   --color-accent-soft: #ff7a4d;
   --color-accent-deep: #e64a19;
 
+  /* Semantic status colors (flip with theme for contrast) */
+  --color-ok: #4ade80;
+  --color-warn: #facc15;
+  --color-bad: #f87171;
+
   --font-display: var(--font-display), "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
@@ -23,6 +28,29 @@
 
 :root {
   color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Light mode — token overrides only; components are theme-agnostic.  */
+/*  Toggled via .light on <html> (see ThemeToggle + root layout).      */
+/* ------------------------------------------------------------------ */
+.light {
+  color-scheme: light;
+
+  --color-ink: #faf8f5; /* warm paper base */
+  --color-ink-soft: #f1eee9; /* raised surfaces */
+  --color-ink-card: #ffffff; /* cards */
+  --color-line: #e5e1da; /* hairline borders */
+  --color-muted: #67635c; /* secondary text */
+  --color-fg: #171512; /* primary text */
+
+  --color-accent-soft: #e64a19; /* hover darkens (instead of lightening) on light bg */
+
+  --color-ok: #15803d;
+  --color-warn: #a16207;
+  --color-bad: #b91c1c;
+
+  --shadow-glow: 0 0 0 1px rgba(255, 87, 34, 0.35), 0 12px 32px -14px rgba(255, 87, 34, 0.45);
 }
 
 html {

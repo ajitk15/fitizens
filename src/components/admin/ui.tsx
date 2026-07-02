@@ -111,19 +111,19 @@ export function AdminTable({ headers, children }: { headers: string[]; children:
 export function StatusPill({ value }: { value: string }) {
   const tone =
     {
-      published: "text-green-400 border-green-400/40",
-      confirmed: "text-green-400 border-green-400/40",
-      paid: "text-green-400 border-green-400/40",
+      published: "text-ok border-ok/40",
+      confirmed: "text-ok border-ok/40",
+      paid: "text-ok border-ok/40",
       new: "text-accent border-accent/40",
       popular: "text-accent border-accent/40",
       created: "text-accent border-accent/40",
-      pending_payment: "text-yellow-400 border-yellow-400/40",
-      contacted: "text-yellow-400 border-yellow-400/40",
+      pending_payment: "text-warn border-warn/40",
+      contacted: "text-warn border-warn/40",
       draft: "text-muted border-line",
       closed: "text-muted border-line",
       completed: "text-muted border-line",
-      cancelled: "text-red-400 border-red-400/40",
-      failed: "text-red-400 border-red-400/40",
+      cancelled: "text-bad border-bad/40",
+      failed: "text-bad border-bad/40",
     }[value] ?? "text-muted border-line";
   return (
     <span className={`inline-block rounded-full border px-2 py-0.5 text-xs ${tone}`}>

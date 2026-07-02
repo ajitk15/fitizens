@@ -111,12 +111,12 @@ export default async function AuditAdminPage({
                   <summary className="cursor-pointer text-muted hover:text-accent">view</summary>
                   <div className="mt-2 grid gap-2 lg:grid-cols-2">
                     {a.beforeJson && (
-                      <pre className="max-h-48 overflow-auto rounded-lg border border-line bg-ink p-2 text-red-300/80">
+                      <pre className="max-h-48 overflow-auto rounded-lg border border-line bg-ink p-2 text-bad/80">
                         {pretty(a.beforeJson)}
                       </pre>
                     )}
                     {a.afterJson && (
-                      <pre className="max-h-48 overflow-auto rounded-lg border border-line bg-ink p-2 text-green-300/80">
+                      <pre className="max-h-48 overflow-auto rounded-lg border border-line bg-ink p-2 text-ok/80">
                         {pretty(a.afterJson)}
                       </pre>
                     )}

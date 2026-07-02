@@ -236,7 +236,7 @@ export function LeadForm() {
       </div>
 
       {status === "error" && (
-        <p className="mt-4 text-sm text-red-400">{error}</p>
+        <p className="mt-4 text-sm text-bad">{error}</p>
       )}
 
       <div className="mt-6 flex items-center justify-between gap-3">

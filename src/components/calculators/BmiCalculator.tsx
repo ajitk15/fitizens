@@ -6,8 +6,8 @@ import { CalcCard, NumberField, Result } from "./ui";
 function category(bmi: number) {
   if (bmi < 18.5) return { label: "Underweight", color: "text-blue-300" };
   if (bmi < 25) return { label: "Healthy weight", color: "text-accent" };
-  if (bmi < 30) return { label: "Overweight", color: "text-yellow-300" };
-  return { label: "Obese", color: "text-red-400" };
+  if (bmi < 30) return { label: "Overweight", color: "text-warn" };
+  return { label: "Obese", color: "text-bad" };
 }
 
 export function BmiCalculator() {

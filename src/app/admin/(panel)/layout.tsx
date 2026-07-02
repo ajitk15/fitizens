@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "./actions";
 
 export const metadata: Metadata = {
@@ -47,13 +48,16 @@ export default async function AdminPanelLayout({
           ))}
         </nav>
         <div className="mt-8 border-t border-line pt-4">
+          <div className="mb-3">
+            <ThemeToggle />
+          </div>
           <p className="truncate text-xs text-muted">{admin.email}</p>
           <div className="mt-2 flex flex-col gap-2">
             <Link href="/" className="text-xs text-muted underline hover:text-accent">
               View site →
             </Link>
             <form action={logoutAction}>
-              <button type="submit" className="text-xs text-muted underline hover:text-red-400">
+              <button type="submit" className="text-xs text-muted underline hover:text-bad">
                 Sign out
               </button>
             </form>

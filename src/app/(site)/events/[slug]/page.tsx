@@ -101,13 +101,13 @@ export default async function EventDetailPage({ params }: Params) {
               </span>
               {seatsLeft != null && !past && (
                 <span
-                  className={`rounded-full border px-3 py-1 ${soldOut ? "border-red-400/40 text-red-400" : "border-accent/40 text-accent"}`}
+                  className={`rounded-full border px-3 py-1 ${soldOut ? "border-bad/40 text-bad" : "border-accent/40 text-accent"}`}
                 >
                   {soldOut ? "Sold out" : `${seatsLeft} seats left`}
                 </span>
               )}
               {cancelled && (
-                <span className="rounded-full border border-red-400/40 px-3 py-1 text-red-400">
+                <span className="rounded-full border border-bad/40 px-3 py-1 text-bad">
                   Cancelled
                 </span>
               )}

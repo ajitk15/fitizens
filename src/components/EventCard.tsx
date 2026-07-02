@@ -55,7 +55,7 @@ export function EventCard({ event, past = false }: { event: EventItem; past?: bo
             {event.pricePaise === 0 ? "Free" : `₹${(event.pricePaise / 100).toLocaleString("en-IN")}`}
           </span>
           {soldOut && (
-            <span className="rounded-full border border-red-400/40 px-2.5 py-1 text-xs text-red-400">
+            <span className="rounded-full border border-bad/40 px-2.5 py-1 text-xs text-bad">
               Sold out
             </span>
           )}

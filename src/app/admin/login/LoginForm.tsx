@@ -31,7 +31,7 @@ export function LoginForm() {
           className="w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm focus:border-accent focus:outline-none"
         />
       </label>
-      {state?.error && <p className="text-sm text-red-400">{state.error}</p>}
+      {state?.error && <p className="text-sm text-bad">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}

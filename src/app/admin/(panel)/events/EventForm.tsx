@@ -57,7 +57,7 @@ export function EventForm({ event }: { event?: EventRow }) {
           <Field label="Description (Markdown)">
             <Textarea name="description" rows={10} defaultValue={event?.descriptionMd} className="font-mono text-xs" />
           </Field>
-          <ImageUploadField name="image" label="Event image" defaultValue={event?.image ?? ""} />
+          <ImageUploadField name="image" label="Event image" kind="event" defaultValue={event?.image ?? ""} />
         </div>
       </AdminCard>
       <SubmitButton>{event ? "Save event" : "Create event"}</SubmitButton>

@@ -27,7 +27,7 @@ export default async function TrainerAdminPage({
     <>
       <AdminHeading title="Trainer Profile" />
       {saved && (
-        <p className="mb-4 rounded-lg border border-green-400/40 bg-green-400/10 px-4 py-2 text-sm text-green-400">
+        <p className="mb-4 rounded-lg border border-ok/40 bg-ok/10 px-4 py-2 text-sm text-ok">
           Saved.
         </p>
       )}
@@ -77,7 +77,7 @@ export default async function TrainerAdminPage({
 
         <AdminCard title="Images">
           <div className="space-y-4">
-            <ImageUploadField name="profileImage" label="Profile image" defaultValue={trainer.profileImage} />
+            <ImageUploadField name="profileImage" label="Profile image" kind="profile" defaultValue={trainer.profileImage} />
             <div>
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                 Gallery images (About page)

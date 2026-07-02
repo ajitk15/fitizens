@@ -72,7 +72,7 @@ export function ProgramForm({ program }: { program?: ProgramRow }) {
             </div>
           </div>
           <Checkbox name="popular" label="Mark as most popular" defaultChecked={program?.popular} />
-          <ImageUploadField name="image" label="Card image" defaultValue={program?.image ?? ""} />
+          <ImageUploadField name="image" label="Card image" kind="program" defaultValue={program?.image ?? ""} />
         </div>
       </AdminCard>
       <SubmitButton>{program ? "Save program" : "Create program"}</SubmitButton>

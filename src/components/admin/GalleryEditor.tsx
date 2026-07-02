@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { IMAGE_SPECS, type ImageKind } from "@/lib/image-specs";
 
 /**
  * Visual editor for image lists (trainer gallery): upload to add, click to
  * remove, drag-free reordering via arrows. Serializes to a hidden JSON input —
  * no hand-typed paths to get wrong.
  */
-export function GalleryEditor({ name, initial }: { name: string; initial: string[] }) {
+export function GalleryEditor({
+  name,
+  initial,
+  kind = "gallery",
+}: {
+  name: string;
+  initial: string[];
+  kind?: ImageKind;
+}) {
   const [paths, setPaths] = useState<string[]>(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +28,7 @@ export function GalleryEditor({ name, initial }: { name: string; initial: string
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("kind", kind);
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok || !data.path) throw new Error(data.error || "Upload failed");
@@ -55,7 +65,7 @@ export function GalleryEditor({ name, initial }: { name: string; initial: string
                 type="button"
                 aria-label="Remove image"
                 onClick={() => setPaths((ps) => ps.filter((_, j) => j !== i))}
-                className="px-1 text-xs text-red-400"
+                className="px-1 text-xs text-bad"
               >
                 ×
               </button>
@@ -79,8 +89,11 @@ export function GalleryEditor({ name, initial }: { name: string; initial: string
           />
         </label>
       </div>
+      <p className="mt-1 text-xs text-muted/70">
+        {IMAGE_SPECS[kind].label} — larger images are resized automatically.
+      </p>
       {busy && <p className="mt-1 text-xs text-muted">Uploading…</p>}
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-bad">{error}</p>}
     </div>
   );
 }

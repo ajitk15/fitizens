@@ -23,7 +23,7 @@ export default async function SettingsAdminPage({
     <>
       <AdminHeading title="Settings" />
       {saved && (
-        <p className="mb-4 rounded-lg border border-green-400/40 bg-green-400/10 px-4 py-2 text-sm text-green-400">
+        <p className="mb-4 rounded-lg border border-ok/40 bg-ok/10 px-4 py-2 text-sm text-ok">
           Saved.
         </p>
       )}

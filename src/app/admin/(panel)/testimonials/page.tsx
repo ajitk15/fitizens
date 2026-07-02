@@ -47,7 +47,7 @@ export default async function TestimonialsAdminPage({
           <Field label="Quote">
             <Textarea name="quote" defaultValue={editing?.quote} required />
           </Field>
-          <ImageUploadField name="image" label="Client photo (optional)" defaultValue={editing?.image ?? ""} />
+          <ImageUploadField name="image" label="Client photo (optional)" kind="testimonial" defaultValue={editing?.image ?? ""} />
           <Checkbox name="featured" label="Featured on homepage" defaultChecked={editing?.featured ?? false} />
           <SubmitButton>{editing ? "Save changes" : "Add testimonial"}</SubmitButton>
         </form>

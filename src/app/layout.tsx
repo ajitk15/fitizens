@@ -53,7 +53,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${anton.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${anton.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Apply the stored theme before paint — no flash. Dark is the default. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('fitizens_theme')==='light')document.documentElement.classList.add('light')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="flex min-h-full flex-col bg-ink text-fg">
         {children}
         <Analytics />

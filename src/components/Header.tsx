@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 // Mobile menu closes via link click handlers (below) rather than a route effect.
 import { navLinks } from "@/content/site";
 import { ButtonLink } from "./Button";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string }) {
   const pathname = usePathname();
@@ -54,13 +55,16 @@ export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string
           })}
         </ul>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <ButtonLink href="/contact" size="md">
             {ctaLabel}
           </ButtonLink>
         </div>
 
-        {/* Mobile toggle */}
+        {/* Mobile: theme toggle + menu button */}
+        <div className="flex items-center gap-2 md:hidden">
+        <ThemeToggle />
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-lg border border-line text-fg md:hidden"
@@ -86,6 +90,7 @@ export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string
             />
           </span>
         </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}

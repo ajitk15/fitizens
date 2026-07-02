@@ -43,7 +43,7 @@ export function PostForm({ post }: { post?: PostRow }) {
           <Field label="Excerpt">
             <Textarea name="excerpt" defaultValue={post?.excerpt} required />
           </Field>
-          <ImageUploadField name="coverImage" label="Cover image" defaultValue={post?.coverImage ?? ""} />
+          <ImageUploadField name="coverImage" label="Cover image" kind="post" defaultValue={post?.coverImage ?? ""} />
           <Field
             label="Body (Markdown)"
             hint="Headings: ## Heading — Lists: - item — Bold: **text** — Links: [text](url) — Images: ![alt](/uploads/…)"
