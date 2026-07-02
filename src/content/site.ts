@@ -7,8 +7,6 @@
  * the client supplies final bio text, testimonials and before/after pairs.
  */
 
-import type { PortableTextBlock } from "@portabletext/types";
-
 export type Goal = "fat-loss" | "muscle-gain" | "recomp" | "lifestyle";
 
 export interface Trainer {
@@ -102,9 +100,32 @@ export interface PostListItem {
   publishedAt: string;
 }
 
-/** Blog — full article (adds the Portable Text body). */
+/** Blog — full article (adds the markdown body). */
 export interface Post extends PostListItem {
-  body: PortableTextBlock[];
+  body: string;
+}
+
+/** Event posted by the trainer (bootcamp, workshop, challenge …). */
+export interface EventItem {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string;
+  descriptionMd: string;
+  image?: string;
+  location: string;
+  mode: "online" | "in-person";
+  /** ISO datetimes. */
+  startAt: string;
+  endAt?: string;
+  /** Undefined = unlimited seats. */
+  capacity?: number;
+  /** 0 = free event. */
+  pricePaise: number;
+  currency: string;
+  status: "draft" | "published" | "cancelled" | "completed";
+  /** Number of confirmed registrations (computed). */
+  confirmedCount: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -386,8 +407,16 @@ export const site = {
     "Satya Muddena",
   ],
   whatsappLink: `https://wa.me/${trainer.whatsapp}`,
-  /** Calendly inline-widget URL — replace with the client's real scheduling link. */
-  calendlyUrl: process.env.NEXT_PUBLIC_CALENDLY_URL || "",
+  /** Label used by every call-booking button — editable in /admin/settings. */
+  ctaLabel: "Book a Consultation",
+  /** First-visit popup on the home page — editable in /admin/settings. */
+  popup: {
+    enabled: true,
+    title: "Your transformation starts with a call",
+    body: "One-on-one with Coach Satya — we go through your goals, lifestyle and blood work, then map the exact plan that gets you there.",
+    slots: "Mon–Sat, 4:00 PM – 8:00 PM (IST)",
+    note: "Strictly one-on-one. Your goals, your plan — undivided attention.",
+  },
 };
 
 export const navLinks = [
@@ -395,6 +424,7 @@ export const navLinks = [
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
   { label: "Transformations", href: "/transformations" },
+  { label: "Events", href: "/events" },
   { label: "Tools", href: "/tools" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },

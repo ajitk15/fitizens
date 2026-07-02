@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { navLinks } from "@/content/site";
 import { ButtonLink } from "./Button";
 
-export function Header() {
+export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -56,7 +56,7 @@ export function Header() {
 
         <div className="hidden md:block">
           <ButtonLink href="/contact" size="md">
-            Book a Call
+            {ctaLabel}
           </ButtonLink>
         </div>
 
@@ -105,7 +105,7 @@ export function Header() {
             ))}
             <li className="mt-2">
               <ButtonLink href="/contact" size="lg" className="w-full" onClick={() => setOpen(false)}>
-                Book a Call
+                {ctaLabel}
               </ButtonLink>
             </li>
           </ul>

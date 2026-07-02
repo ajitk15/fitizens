@@ -1,4 +1,4 @@
-import { getStats } from "@/sanity/queries";
+import { getStats } from "@/lib/content";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { Reveal } from "./Reveal";
 

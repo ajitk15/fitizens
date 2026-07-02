@@ -1,10 +1,13 @@
-# FITIZENS — Personal Trainer Website
+# FITIZENS — Personal Trainer Website (self-hosted)
 
 Marketing & lead-generation website for **FITIZENS** (online fitness trainer
-**Satya Muddena**, Hyderabad). Built with Next.js (App Router) + Tailwind CSS +
-Framer Motion. Dark-first design with an electric-orange accent.
+**Satya Muddena**, Hyderabad) with a **built-in admin panel** — no external CMS
+or third-party services required. Next.js (App Router) + Tailwind CSS + Framer
+Motion + **SQLite**. Dark-first design with an electric-orange accent.
 
-Reference brief and the client's filled questionnaire live in [`/docs`](./docs).
+Everything the site shows — trainer profile, email & phone, social links,
+programs, transformations, testimonials, FAQs, blog posts, events, prices — is
+editable at **`/admin`** and reflects across the whole site immediately.
 
 ---
 
@@ -12,9 +15,14 @@ Reference brief and the client's filled questionnaire live in [`/docs`](./docs).
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in keys as accounts become available
-npm run dev                  # http://localhost:3000
+cp .env.example .env.local   # set ADMIN_EMAIL + ADMIN_PASSWORD at minimum
+npm run dev                  # http://localhost:3000  (admin at /admin)
 ```
+
+On first boot the app creates `data/fitizens.db`, applies migrations, seeds it
+with the bundled default content (`src/content/site.ts`) and creates the admin
+user from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Seeding is idempotent — it never
+overwrites your edits.
 
 Other scripts:
 
@@ -22,102 +30,114 @@ Other scripts:
 npm run build   # production build
 npm run start   # serve the production build
 npm run lint    # ESLint
+npx tsx scripts/seed.ts        # initialize the DB without starting the app
+npx drizzle-kit generate       # regenerate SQL migrations after schema changes
 ```
 
 ---
 
-## Project structure
+## Architecture
 
 ```
 src/
 ├─ app/
-│  ├─ layout.tsx           # fonts, global SEO metadata, JSON-LD, header/footer/CTAs
-│  ├─ page.tsx             # Home (hero, stats, about, programs, how-it-works,
-│  │                       #       transformations, testimonials, FAQ, CTA)
-│  ├─ about/               # About / credibility
-│  ├─ programs/            # Package listing + /programs/[slug] detail pages
-│  ├─ transformations/     # Filterable before/after gallery
-│  ├─ contact/             # Multi-step lead form + Calendly + payment + contacts
-│  ├─ api/lead/            # Lead capture → email (SMTP)
-│  ├─ api/payment/         # Razorpay order creation (stubbed until keys set)
-│  ├─ sitemap.ts, robots.ts, not-found.tsx
-│  └─ globals.css          # Tailwind v4 theme (@theme): colours, fonts
-├─ components/             # Header, Footer, StickyCTA, WhatsAppButton,
-│                          # AnimatedCounter, Reveal, BeforeAfterSlider,
-│                          # ProgramCard, FaqAccordion, TestimonialCarousel,
-│                          # TransformationsGallery, Hero, LeadForm,
-│                          # CalendlyEmbed, ConsultationPayment, …
-└─ content/site.ts         # ⭐ ALL site content/data (edit copy here)
+│  ├─ (site)/               # public pages (Home, About, Programs, Events,
+│  │                        #   Transformations, Blog, Tools, Contact)
+│  ├─ admin/                # built-in admin panel (login + CRUD + audit log)
+│  ├─ api/
+│  │  ├─ lead/              # lead capture → DB + email
+│  │  ├─ events/register/   # event registration (free + paid)
+│  │  ├─ payment/order      # Razorpay order creation (amounts derived server-side)
+│  │  ├─ payment/verify     # HMAC signature verification (never trust the client)
+│  │  ├─ payment/webhook    # Razorpay webhook safety net (raw-body HMAC)
+│  │  └─ admin/upload       # image uploads (content-hashed, stored in DATA_DIR)
+│  └─ uploads/[...path]/    # serves uploaded images
+├─ components/              # public UI + components/admin/* primitives
+├─ content/site.ts          # typed default content (used to seed + as fallback)
+├─ db/                      # Drizzle schema, SQLite bootstrap, seeding
+├─ lib/                     # content getters, auth, audit, mail, razorpay
+└─ proxy.ts                 # /admin cookie redirect (auth enforced in-request)
+drizzle/                    # generated SQL migrations (applied on boot)
+data/                       # SQLite DB + uploads (gitignored; volume in Docker)
 ```
 
-**To change any copy, prices, FAQs, stats, packages or links, edit
-[`src/content/site.ts`](./src/content/site.ts).** It is the single source of
-truth and is fully typed.
+- **Database**: SQLite via better-sqlite3 + Drizzle ORM. Single file at
+  `${DATA_DIR:-./data}/fitizens.db` (WAL mode). No external database service.
+- **Auth**: single admin user, scrypt-hashed password, DB-backed sessions with
+  hashed tokens in an httpOnly cookie. Every admin action re-checks the session.
+- **Audit**: append-only `audit_log` records every content change (with
+  before/after), login attempt, lead, registration and payment event —
+  browsable at `/admin/audit`.
+- **Payments**: Razorpay via its REST API (no SDK). Order amounts are always
+  derived server-side; success requires HMAC signature verification
+  (`/api/payment/verify`), with `/api/payment/webhook` as the safety net for
+  dropped clients. Orders are persisted with full lifecycle status.
+- **Events**: post bootcamps/workshops in `/admin/events`; visitors register on
+  `/events/<slug>` — free events confirm instantly, paid events confirm after
+  payment. Capacity is enforced. Attendees get email confirmations (when SMTP
+  is configured).
+- **Blog**: markdown body, edited in `/admin/posts`, rendered with the same
+  typography as before.
+- **Graceful degradation**: without SMTP/Razorpay/Instagram keys the site runs
+  fully — email logs to console, pay buttons show "coming soon", the Instagram
+  section shows a follow card.
 
 ---
 
-## Features built (Phases 1 + 2)
+## Deploy (Docker — recommended)
 
-- Multi-page site: Home, About, Programs (+ detail pages), Transformations, Contact.
-- Interactivity: animated stat counters, scroll-reveal sections, draggable
-  before/after slider, testimonial carousel, FAQ accordion, sticky "Book a Call"
-  CTA, floating WhatsApp button, smooth-scroll sticky header with mobile menu.
-- Conversion: multi-step lead form, paid-consultation flow, Calendly embed.
-- SEO: per-page metadata + Open Graph/Twitter, canonical URLs, `sitemap.xml`,
-  `robots.txt`, and JSON-LD (`Person` + `LocalBusiness`).
-- Accessibility: keyboard-operable slider/accordion/nav, alt text,
-  `prefers-reduced-motion` respected.
+Needs any small VPS (or container host) with a persistent disk:
 
-Design decision: **prices are intentionally hidden** (per client request). Cards
-show "Enquire for pricing" + a consultation CTA. Real prices are stored in
-`site.ts` (`programs[].price`) and can be surfaced later by editing
-`ProgramCard.tsx`.
+```bash
+docker build -t fitizens .
+docker run -d --name fitizens -p 3000:3000 \
+  -v fitizens-data:/data \
+  -e ADMIN_EMAIL=you@example.com \
+  -e ADMIN_PASSWORD=strong-password \
+  -e NEXT_PUBLIC_SITE_URL=https://fitizens.in \
+  fitizens
+```
 
----
+Put a reverse proxy (Caddy/Nginx/Traefik) with TLS in front, and back up the
+`fitizens-data` volume (it contains the database and all uploaded images).
 
-## Integrations — what needs the client's accounts/keys
-
-All of these degrade gracefully: the site runs and looks complete without them.
-Configure in `.env.local` (see `.env.example`).
-
-| Feature | Env vars | Until configured |
-|---|---|---|
-| **Lead emails** | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `LEAD_TO_EMAIL` | Form works; leads are logged server-side instead of emailed. Defaults recipient to `satya.muddena@gmail.com`. |
-| **Calendly booking** | `NEXT_PUBLIC_CALENDLY_URL` | Shows a "calendar coming soon" placeholder; users book via the form/WhatsApp. |
-| **Razorpay payment** | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Pay button shows a "payments coming soon" notice (`/api/payment` returns `enabled:false`). |
-| **Site URL** | `NEXT_PUBLIC_SITE_URL` | Defaults to `https://fitizens.in` for canonical/OG/sitemap. |
-
-> ⚠️ Payment go-live also needs server-side **signature verification** before
-> confirming a booking — see the `TODO` in `ConsultationPayment.tsx`
-> (`/api/payment/verify`). Do not treat the client `handler` callback as proof
-> of payment.
+> ⚠️ **Serverless hosts (Netlify/Vercel) are not supported** by this build:
+> SQLite and local uploads need a persistent disk and a long-lived Node
+> process. Any $5/mo VPS (Hetzner, DigitalOcean, Lightsail) or container
+> platform with volumes (Fly.io, Railway, Render) works.
 
 ---
 
-## Content still needed from the client (placeholders in place)
+## Environment variables
 
-- Final **bio / about** text and **brand colours/fonts/logo** (currently
-  spec defaults: dark + orange, Anton + Inter).
-- **Real testimonials** (quote, name, rating, result) — currently placeholders.
-- **Before/after transformation photos with written consent** — the gallery
-  currently reuses the trainer's photos as samples (`placeholder: true`).
-- **Calendly**, **Razorpay**, **SMTP/email** accounts.
-- **Domain & hosting** (recommended: Vercel), and **legal pages**
-  (privacy policy, terms, health/results disclaimer).
+See [.env.example](./.env.example). Only `ADMIN_EMAIL` / `ADMIN_PASSWORD` are
+required to get a working site + admin. SMTP (lead/receipt emails), Razorpay
+(payments) and analytics IDs can be added whenever the accounts are ready.
 
----
-
-## Not in this build (future phases)
-
-- Phase 3: BMI/calorie calculators, program-finder quiz.
-- Phase 4: headless CMS, blog, live Instagram feed, analytics (GA4/Meta Pixel),
-  A/B testing.
+For Razorpay go-live: set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and create
+a webhook in the Razorpay dashboard pointing at
+`https://<domain>/api/payment/webhook` (events `payment.captured` +
+`payment.failed`) with `RAZORPAY_WEBHOOK_SECRET`.
 
 ---
 
-## Deploy (Vercel)
+## Editing content
 
-1. Push this repo to GitHub.
-2. Import into Vercel; it auto-detects Next.js.
-3. Add the environment variables from `.env.example` in Vercel project settings.
-4. Point the client's domain at the Vercel project.
+Everything is at **`/admin`**:
+
+| Section | What it controls |
+|---|---|
+| Trainer | Name, tagline, bio, **email**, **WhatsApp number**, certifications, photos, stats bar |
+| Programs | Coaching packages (cards, detail pages, prices) |
+| Transformations | Before/after gallery (with consent flag) |
+| Testimonials | Client quotes and ratings |
+| FAQs | Q&A by category |
+| Socials | **Instagram / YouTube / Facebook /…** links shown in the footer & JSON-LD |
+| Blog Posts | Markdown articles |
+| Events | Bootcamps/workshops with price, capacity and status |
+| Registrations / Orders / Leads | Inboxes for everything visitors submit |
+| Settings | Site URL, SEO keywords, consultation price |
+| Audit Log | Who changed what, when, with before/after |
+
+Design decision: **program prices are intentionally hidden** on the public site
+(cards show "Enquire for pricing"); they're stored per program in the admin.

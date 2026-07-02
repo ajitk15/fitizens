@@ -1,4 +1,4 @@
-import { getSocials } from "@/sanity/queries";
+import { getSocials } from "@/lib/content";
 
 interface IgMedia {
   id: string;

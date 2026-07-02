@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { ButtonLink } from "./Button";
 
 /**
- * Sticky "Book a Free Call" bar that slides up after the user scrolls past the
- * hero. Hidden on the contact page (where the form already lives).
+ * Sticky booking bar that slides up after the user scrolls past the hero.
+ * Hidden on the contact page (where the form already lives). Label is
+ * admin-controlled via /admin/settings.
  */
-export function StickyCTA() {
+export function StickyCTA({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string }) {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
 
@@ -28,7 +29,7 @@ export function StickyCTA() {
       }`}
     >
       <ButtonLink href="/contact" size="lg" className="shadow-glow">
-        Book a Free Call
+        {ctaLabel}
       </ButtonLink>
     </div>
   );

@@ -4,7 +4,13 @@ import type { Program } from "@/content/site";
 import { goalLabels } from "@/content/site";
 import { ButtonLink } from "./Button";
 
-export function ProgramCard({ program }: { program: Program }) {
+export function ProgramCard({
+  program,
+  ctaLabel = "Book a Consultation",
+}: {
+  program: Program;
+  ctaLabel?: string;
+}) {
   return (
     <article
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-ink-card transition-all duration-300 hover:-translate-y-1 ${
@@ -70,7 +76,7 @@ export function ProgramCard({ program }: { program: Program }) {
           </span>
           <div className="flex gap-3">
             <ButtonLink href="/contact" className="flex-1" variant="primary">
-              Book a Consultation
+              {ctaLabel}
             </ButtonLink>
             <ButtonLink
               href={`/programs/${program.slug}`}

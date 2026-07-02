@@ -13,14 +13,10 @@ interface ConsultationPaymentProps {
 /**
  * Razorpay consultation-payment button.
  *
- * Built in placeholder/test mode: it asks the server (/api/payment) to create an
- * order. Until a live Razorpay key is configured the server returns
- * { enabled:false }, and we show a friendly "payments coming soon" notice
- * instead of opening checkout. When keys exist, the Razorpay Checkout modal
- * opens with the created order.
- *
- * TODO (go-live): set RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET (server) and
- * NEXT_PUBLIC_RAZORPAY_KEY_ID (client) — see .env.example.
+ * Asks the server (/api/payment/order) to create an order; until Razorpay keys
+ * are configured the server returns { enabled:false } and a friendly
+ * "payments coming soon" notice shows instead of checkout. Success is only
+ * shown after /api/payment/verify confirms the payment signature server-side.
  */
 
 interface RazorpayResponse {
@@ -39,11 +35,37 @@ export function ConsultationPayment({ consultation = fallbackConsultation }: Con
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
+  async function verify(response: RazorpayResponse) {
+    try {
+      const res = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(response),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        setNotice(
+          `Payment confirmed (${response.razorpay_payment_id}). I'll be in touch to schedule your call!`,
+        );
+      } else {
+        setNotice(
+          "We received a payment response but could not verify it. If you were charged, message me on WhatsApp with your payment ID.",
+        );
+      }
+    } catch {
+      setNotice("Could not verify the payment. Please message me on WhatsApp.");
+    }
+  }
+
   async function handlePay() {
     setLoading(true);
     setNotice(null);
     try {
-      const res = await fetch("/api/payment", { method: "POST" });
+      const res = await fetch("/api/payment/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "consultation" }),
+      });
       const data = await res.json();
 
       if (!data.enabled) {
@@ -53,24 +75,20 @@ export function ConsultationPayment({ consultation = fallbackConsultation }: Con
         return;
       }
 
-      const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      if (!window.Razorpay || !keyId) {
+      if (!res.ok || !data.orderId || !window.Razorpay || !data.keyId) {
         setNotice("Payment could not start. Please try WhatsApp for now.");
         return;
       }
 
       const rzp = new window.Razorpay({
-        key: keyId,
+        key: data.keyId,
         amount: data.amount,
         currency: data.currency,
         name: "FITIZENS",
         description: `Consultation Call (${consultation.durationLabel})`,
         order_id: data.orderId,
         handler: (response: RazorpayResponse) => {
-          // TODO: verify signature server-side at /api/payment/verify before confirming.
-          setNotice(
-            `Payment received (${response.razorpay_payment_id}). I'll be in touch to schedule your call!`,
-          );
+          void verify(response);
         },
         theme: { color: "#ff5722" },
       });

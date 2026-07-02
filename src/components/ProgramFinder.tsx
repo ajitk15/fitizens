@@ -18,7 +18,13 @@ const timeOptions: { key: TimeKey; label: string }[] = [
 
 const timeToIndex: Record<TimeKey, number> = { short: 0, medium: 1, long: 2 };
 
-export function ProgramFinder({ programs }: { programs: Program[] }) {
+export function ProgramFinder({
+  programs,
+  ctaLabel = "Book a Consultation",
+}: {
+  programs: Program[];
+  ctaLabel?: string;
+}) {
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState<Goal | "">("");
   const [level, setLevel] = useState("");
@@ -125,7 +131,7 @@ export function ProgramFinder({ programs }: { programs: Program[] }) {
               </p>
               <div className="flex flex-wrap justify-center gap-3 pt-2">
                 <ButtonLink href={`/contact?goal=${goal}`} size="lg">
-                  Book a Consultation
+                  {ctaLabel}
                 </ButtonLink>
                 <ButtonLink href={`/programs/${recommended.slug}`} size="lg" variant="secondary">
                   See the package
@@ -158,7 +164,7 @@ export function ProgramFinder({ programs }: { programs: Program[] }) {
       {programs.length === 0 && (
         <p className="mt-4 text-center text-sm text-muted">
           <Link href="/contact" className="text-accent hover:underline">
-            Book a consultation
+            {ctaLabel}
           </Link>{" "}
           and we&apos;ll find your best fit.
         </p>

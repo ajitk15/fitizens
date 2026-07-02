@@ -1,4 +1,4 @@
-import { getSite } from "@/sanity/queries";
+import { getSite } from "@/lib/content";
 
 /** Floating WhatsApp button — high-converting for the India market. */
 export async function WhatsAppButton() {

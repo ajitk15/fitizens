@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ButtonLink } from "./Button";
 import { Reveal } from "./Reveal";
-import { getTrainer } from "@/sanity/queries";
+import { getTrainer } from "@/lib/content";
 
 export async function Hero() {
   const trainer = await getTrainer();

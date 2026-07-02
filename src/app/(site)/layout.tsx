@@ -1,0 +1,75 @@
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { StickyCTA } from "@/components/StickyCTA";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { WelcomePopup } from "@/components/WelcomePopup";
+import { getSite, getTrainer, getSocials } from "@/lib/content";
+import type { SocialLink } from "@/content/site";
+
+/** JSON-LD structured data: Person + LocalBusiness for local SEO. */
+function buildJsonLd(
+  site: Awaited<ReturnType<typeof getSite>>,
+  trainer: Awaited<ReturnType<typeof getTrainer>>,
+  socials: SocialLink[],
+) {
+  // Profile image may be a bundled "/images/.." path or an uploaded absolute URL.
+  const image = trainer.profileImage.startsWith("http")
+    ? trainer.profileImage
+    : `${site.url}${trainer.profileImage}`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        name: trainer.fullName,
+        jobTitle: trainer.tagline,
+        description: trainer.shortBio,
+        image,
+        email: `mailto:${trainer.email}`,
+        address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressRegion: "Telangana", addressCountry: "IN" },
+        sameAs: socials.map((s) => s.url),
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": `${site.url}#business`,
+        name: trainer.brand,
+        description: site.description,
+        image,
+        url: site.url,
+        email: trainer.email,
+        telephone: `+${trainer.whatsapp}`,
+        areaServed: "Worldwide (online coaching)",
+        address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressRegion: "Telangana", addressCountry: "IN" },
+      },
+    ],
+  };
+}
+
+export default async function SiteLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const [site, trainer, socials] = await Promise.all([getSite(), getTrainer(), getSocials()]);
+  const jsonLd = buildJsonLd(site, trainer, socials);
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Header ctaLabel={site.ctaLabel} />
+      <main className="flex-1">{children}</main>
+      <Footer />
+      <StickyCTA ctaLabel={site.ctaLabel} />
+      <WhatsAppButton />
+      {site.popup.enabled && (
+        <WelcomePopup
+          title={site.popup.title}
+          body={site.popup.body}
+          slots={site.popup.slots}
+          note={site.popup.note}
+          ctaLabel={site.ctaLabel}
+        />
+      )}
+    </>
+  );
+}

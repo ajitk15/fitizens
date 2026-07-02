@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { trainer } from "@/content/site";
+import { getDb, schema as t } from "@/db";
+import { audit } from "@/lib/audit";
+import { getTrainer } from "@/lib/content";
 
 /**
  * Lead capture endpoint.
@@ -66,6 +68,35 @@ export async function POST(request: Request) {
     receivedAt: new Date().toISOString(),
   };
 
+  // Persist first — a lead must never be lost to an email failure.
+  try {
+    const result = getDb()
+      .insert(t.leads)
+      .values({
+        name,
+        whatsapp,
+        email: body.email?.trim() || null,
+        goal: body.goal || null,
+        level: body.level || null,
+        preferredDatetime: body.preferredDateTime || null,
+        message: body.message?.trim() || null,
+        createdAt: lead.receivedAt,
+      })
+      .run();
+    audit({
+      actor: "public",
+      action: "lead",
+      entityType: "lead",
+      entityId: Number(result.lastInsertRowid),
+      after: lead,
+      ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
+      userAgent: request.headers.get("user-agent"),
+    });
+  } catch (err) {
+    console.error("[lead] DB persist failed:", err);
+  }
+
+  const trainer = await getTrainer();
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   const to = process.env.LEAD_TO_EMAIL || trainer.email;
 
@@ -98,13 +129,9 @@ export async function POST(request: Request) {
         ].join("\n"),
       });
     } catch (err) {
-      console.error("[lead] email send failed:", err);
-      // Still log the lead so it is never lost.
-      console.info("[lead] (unsent) payload:", lead);
-      return NextResponse.json(
-        { error: "Could not send right now. Please try WhatsApp." },
-        { status: 502 },
-      );
+      // Lead is already saved in the DB (visible in /admin/leads) — email is
+      // best-effort, so the visitor still gets a success response.
+      console.error("[lead] email send failed (lead saved to DB):", err);
     }
   } else {
     // No SMTP configured yet — log so nothing is lost during setup.

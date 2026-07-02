@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# runtime data (SQLite DB + uploads) — lives on a volume in production
+/data
 
 # vercel
 .vercel

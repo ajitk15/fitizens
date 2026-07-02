@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { navLinks } from "@/content/site";
-import { getTrainer, getSocials, getSite } from "@/sanity/queries";
+import { getTrainer, getSocials, getSite } from "@/lib/content";
 
 export async function Footer() {
   const [trainer, socials, site] = await Promise.all([
