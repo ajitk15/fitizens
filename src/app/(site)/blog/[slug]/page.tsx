@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { getPost, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 export default async function BlogPostPage({ params }: Params) {
+  await assertPageVisible("blog");
   const { slug } = await params;
   const [post, site] = await Promise.all([getPost(slug), getSite()]);
   if (!post) notFound();

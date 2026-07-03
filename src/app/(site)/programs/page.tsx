@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/Button";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { ProgramFinder } from "@/components/ProgramFinder";
 import { getPrograms, getFaqs, getConsultation, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Programs & Packages",
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 export default async function ProgramsPage() {
+  await assertPageVisible("programs");
   const [programs, faqs, consultation, site] = await Promise.all([
     getPrograms(),
     getFaqs(),

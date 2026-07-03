@@ -22,6 +22,13 @@
       "when": 1783021580239,
       "tag": "0002_structured-popup-slots",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783041334130,
+      "tag": "0003_hidden-pages",
+      "breakpoints": true
     }
   ]
 }

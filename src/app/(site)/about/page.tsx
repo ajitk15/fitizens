@@ -5,6 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { StatsBar } from "@/components/StatsBar";
 import { getTrainer } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AboutPage() {
+  await assertPageVisible("about");
   const trainer = await getTrainer();
   return (
     <>

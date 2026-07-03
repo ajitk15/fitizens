@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { getConsultation, getSite } from "@/lib/content";
 import { AdminCard, AdminHeading, Field, Input, Textarea, Select, Checkbox, SubmitButton } from "@/components/admin/ui";
-import { DAYS } from "@/lib/constants";
+import { DAYS, HIDEABLE_PAGES } from "@/lib/constants";
 import { saveSettingsAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +42,23 @@ export default async function SettingsAdminPage({
             >
               <Input name="ctaLabel" defaultValue={site.ctaLabel} />
             </Field>
+          </div>
+        </AdminCard>
+
+        <AdminCard title="Pages">
+          <p className="mb-3 text-xs text-muted/70">
+            Unchecked pages disappear from the menu and their links stop working. Home and
+            Contact are always visible.
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {HIDEABLE_PAGES.map((p) => (
+              <Checkbox
+                key={p.key}
+                name={`page_${p.key}`}
+                label={p.label}
+                defaultChecked={!site.hiddenPages.includes(p.key)}
+              />
+            ))}
           </div>
         </AdminCard>
 

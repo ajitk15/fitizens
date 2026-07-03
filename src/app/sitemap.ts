@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPrograms, getPosts, getEvents, getSite } from "@/lib/content";
+import { HIDEABLE_PAGES } from "@/lib/constants";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [programs, posts, events, site] = await Promise.all([
@@ -9,7 +10,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getSite(),
   ]);
   const base = site.url.replace(/\/$/, "");
-  const routes = ["", "/about", "/programs", "/transformations", "/events", "/tools", "/blog", "/contact"];
+  const hidden = (key: string) => site.hiddenPages.includes(key);
+  const hiddenHrefs = new Set<string>(
+    HIDEABLE_PAGES.filter((p) => hidden(p.key)).map((p) => p.href),
+  );
+  const routes = ["", "/about", "/programs", "/transformations", "/events", "/tools", "/blog", "/contact"].filter(
+    (r) => !hiddenHrefs.has(r),
+  );
 
   const staticPages = routes.map((path) => ({
     url: `${base}${path}`,
@@ -18,21 +25,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "" ? 1 : 0.8,
   }));
 
-  const programPages = programs.map((p) => ({
+  const programPages = (hidden("programs") ? [] : programs).map((p) => ({
     url: `${base}/programs/${p.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
 
-  const postPages = posts.map((p) => ({
+  const postPages = (hidden("blog") ? [] : posts).map((p) => ({
     url: `${base}/blog/${p.slug}`,
     lastModified: new Date(p.publishedAt),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
 
-  const eventPages = events.map((e) => ({
+  const eventPages = (hidden("events") ? [] : events).map((e) => ({
     url: `${base}/events/${e.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

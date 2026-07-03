@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { goalLabels } from "@/content/site";
 import { getProgram, getConsultation, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function ProgramDetailPage({ params }: Params) {
+  await assertPageVisible("programs");
   const { slug } = await params;
   const [program, consultation, site] = await Promise.all([
     getProgram(slug),

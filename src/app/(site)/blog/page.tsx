@@ -4,6 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { BlogCard } from "@/components/BlogCard";
 import { getPosts, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Blog & Fitness Tips",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 export default async function BlogPage() {
+  await assertPageVisible("blog");
   const [posts, site] = await Promise.all([getPosts(), getSite()]);
 
   return (

@@ -4,6 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { EventCard } from "@/components/EventCard";
 import { ButtonLink } from "@/components/Button";
 import { getEventsSplit, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Events & Bootcamps",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
+  await assertPageVisible("events");
   const [{ upcoming, past }, site] = await Promise.all([getEventsSplit(), getSite()]);
 
   return (

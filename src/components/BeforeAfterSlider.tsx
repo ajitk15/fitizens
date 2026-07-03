@@ -9,6 +9,8 @@ interface BeforeAfterSliderProps {
   beforeAlt?: string;
   afterAlt?: string;
   className?: string;
+  /** Set on above-the-fold sliders so the LCP image loads eagerly. */
+  priority?: boolean;
 }
 
 /**
@@ -22,6 +24,7 @@ export function BeforeAfterSlider({
   beforeAlt = "Before",
   afterAlt = "After",
   className,
+  priority = false,
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50); // percent
@@ -66,6 +69,7 @@ export function BeforeAfterSlider({
         src={afterImage}
         alt={afterAlt}
         fill
+        priority={priority}
         sizes="(max-width: 768px) 100vw, 480px"
         className="object-cover"
         draggable={false}
@@ -84,6 +88,7 @@ export function BeforeAfterSlider({
           src={beforeImage}
           alt={beforeAlt}
           fill
+          priority={priority}
           sizes="(max-width: 768px) 100vw, 480px"
           className="object-cover"
           draggable={false}

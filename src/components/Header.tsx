@@ -8,7 +8,13 @@ import { navLinks } from "@/content/site";
 import { ButtonLink } from "./Button";
 import { ThemeToggle } from "./ThemeToggle";
 
-export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string }) {
+export function Header({
+  ctaLabel = "Book a Consultation",
+  links = navLinks,
+}: {
+  ctaLabel?: string;
+  links?: { label: string; href: string }[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -35,7 +41,7 @@ export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string
 
         {/* Desktop nav */}
         <ul className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => {
+          {links.map((link) => {
             const active =
               link.href === "/"
                 ? pathname === "/"
@@ -97,7 +103,7 @@ export function Header({ ctaLabel = "Book a Consultation" }: { ctaLabel?: string
       {open && (
         <div className="border-t border-line bg-ink md:hidden">
           <ul className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

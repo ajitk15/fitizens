@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getDb, schema as t } from "@/db";
 import { auditedMutation } from "@/lib/admin";
 import { str, num, lines } from "@/lib/forms";
-import { DAYS } from "@/lib/constants";
+import { DAYS, HIDEABLE_PAGES } from "@/lib/constants";
 
 /** Server-side guards — the pickers constrain input, but never trust the client. */
 const day = (fd: FormData, key: string, fb: string) => {
@@ -52,6 +52,10 @@ export async function saveSettingsAction(formData: FormData) {
           popupDayTo: day(formData, "popupDayTo", "Sat"),
           popupTimeFrom: time(formData, "popupTimeFrom", "16:00"),
           popupTimeTo: time(formData, "popupTimeTo", "20:00"),
+          // Checked = visible; anything unchecked is stored as hidden.
+          hiddenPagesJson: JSON.stringify(
+            HIDEABLE_PAGES.filter((p) => formData.get(`page_${p.key}`) == null).map((p) => p.key),
+          ),
         })
         .where(eq(t.siteSettings.id, 1))
         .run();

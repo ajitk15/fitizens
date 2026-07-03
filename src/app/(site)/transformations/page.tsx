@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/Button";
 import { Reveal } from "@/components/Reveal";
 import { TransformationsGallery } from "@/components/TransformationsGallery";
 import { getTransformations } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Transformations",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 export default async function TransformationsPage() {
+  await assertPageVisible("transformations");
   const transformations = await getTransformations();
   return (
     <>

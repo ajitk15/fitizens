@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { EventRegistrationForm } from "@/components/EventRegistrationForm";
 import { getEvent, getEventView, getSite } from "@/lib/content";
+import { assertPageVisible } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ const formatDateTime = (iso: string) =>
   });
 
 export default async function EventDetailPage({ params }: Params) {
+  await assertPageVisible("events");
   const { slug } = await params;
   const [view, site] = await Promise.all([getEventView(slug), getSite()]);
   if (!view) notFound();

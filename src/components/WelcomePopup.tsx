@@ -5,9 +5,6 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ButtonLink } from "./Button";
 
-const STORAGE_KEY = "fitizens_popup_dismissed_at";
-const SHOW_AGAIN_AFTER_DAYS = 7;
-
 interface WelcomePopupProps {
   title: string;
   body: string;
@@ -17,35 +14,29 @@ interface WelcomePopupProps {
 }
 
 /**
- * First-visit popup on the home page. Content is admin-controlled
- * (/admin/settings). Dismissal is remembered for a week so returning visitors
- * aren't nagged. Respects Escape, backdrop click and focus accessibility.
+ * Home-page popup. Content is admin-controlled (/admin/settings). Shows every
+ * time the home page is loaded or navigated to (per client requirement);
+ * dismissing only closes it for the current view. Respects Escape, backdrop
+ * click and focus accessibility.
  */
-export function WelcomePopup({ title, body, slots, note, ctaLabel }: WelcomePopupProps) {
+export function WelcomePopup(props: WelcomePopupProps) {
   const pathname = usePathname();
+  // Mounted only on the home page — navigating away unmounts (closing it) and
+  // navigating back remounts fresh, so it reappears after the short delay.
+  if (pathname !== "/") return null;
+  return <WelcomePopupInner {...props} />;
+}
+
+function WelcomePopupInner({ title, body, slots, note, ctaLabel }: WelcomePopupProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (pathname !== "/") return;
-    try {
-      const dismissedAt = Number(localStorage.getItem(STORAGE_KEY) || 0);
-      const expired = Date.now() - dismissedAt > SHOW_AGAIN_AFTER_DAYS * 24 * 60 * 60 * 1000;
-      if (!dismissedAt || expired) {
-        const timer = setTimeout(() => setOpen(true), 1200);
-        return () => clearTimeout(timer);
-      }
-    } catch {
-      /* storage unavailable (private mode) — skip the popup */
-    }
-  }, [pathname]);
+    const timer = setTimeout(() => setOpen(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const dismiss = useCallback(() => {
     setOpen(false);
-    try {
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
-    } catch {
-      /* ignore */
-    }
   }, []);
 
   useEffect(() => {

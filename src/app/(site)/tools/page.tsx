@@ -6,6 +6,7 @@ import { getSite } from "@/lib/content";
 import { BmiCalculator } from "@/components/calculators/BmiCalculator";
 import { TdeeCalculator } from "@/components/calculators/TdeeCalculator";
 import { OneRepMaxCalculator } from "@/components/calculators/OneRepMaxCalculator";
+import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Free Fitness Calculators",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ToolsPage() {
+  await assertPageVisible("tools");
   const site = await getSite();
   return (
     <>

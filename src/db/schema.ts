@@ -142,6 +142,8 @@ export const siteSettings = sqliteTable("site_settings", {
   popupDayTo: text("popup_day_to").notNull().default("Sat"),
   popupTimeFrom: text("popup_time_from").notNull().default("16:00"), // 24h HH:MM
   popupTimeTo: text("popup_time_to").notNull().default("20:00"),
+  /** Page keys hidden from nav/sitemap (their URLs 404). See HIDEABLE_PAGES. */
+  hiddenPagesJson: text("hidden_pages_json").notNull().default("[]"),
 });
 
 /* ------------------------------------------------------------------ */

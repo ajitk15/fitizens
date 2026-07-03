@@ -236,6 +236,7 @@ export const getSite = cache(async (): Promise<typeof fallback.site> => {
     keywords: keywords.length ? keywords : fallback.site.keywords,
     whatsappLink: `https://wa.me/${trainer.whatsapp}`,
     ctaLabel: settings?.ctaLabel || fallback.site.ctaLabel,
+    hiddenPages: settings ? json<string[]>(settings.hiddenPagesJson, []) : [],
     popup: settings
       ? {
           enabled: settings.popupEnabled,

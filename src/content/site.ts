@@ -409,6 +409,8 @@ export const site = {
   whatsappLink: `https://wa.me/${trainer.whatsapp}`,
   /** Label used by every call-booking button — editable in /admin/settings. */
   ctaLabel: "Book a Consultation",
+  /** Page keys hidden from nav/sitemap — editable in /admin/settings. */
+  hiddenPages: [] as string[],
   /** First-visit popup on the home page — editable in /admin/settings. */
   popup: {
     enabled: true,

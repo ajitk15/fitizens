@@ -52,13 +52,14 @@ export function TransformationsGallery({
       </div>
 
       <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((t) => (
+        {visible.map((t, i) => (
           <figure key={t.id} className="flex flex-col gap-3">
             <BeforeAfterSlider
               beforeImage={t.beforeImage}
               afterImage={t.afterImage}
               beforeAlt={`${t.clientName} before`}
               afterAlt={`${t.clientName} after`}
+              priority={i < 3}
             />
             <figcaption className="space-y-1">
               <div className="flex items-center justify-between gap-2">

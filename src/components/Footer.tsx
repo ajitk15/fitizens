@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { navLinks } from "@/content/site";
+import { HIDEABLE_PAGES } from "@/lib/constants";
 import { getTrainer, getSocials, getSite } from "@/lib/content";
 
 export async function Footer() {
@@ -8,6 +9,10 @@ export async function Footer() {
     getSocials(),
     getSite(),
   ]);
+  const hiddenHrefs = new Set<string>(
+    HIDEABLE_PAGES.filter((p) => site.hiddenPages.includes(p.key)).map((p) => p.href),
+  );
+  const links = navLinks.filter((l) => !hiddenHrefs.has(l.href));
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-line bg-ink-soft">
@@ -29,7 +34,7 @@ export async function Footer() {
             Explore
           </h3>
           <ul className="mt-4 space-y-2">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

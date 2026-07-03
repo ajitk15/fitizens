@@ -84,9 +84,26 @@ data/                       # SQLite DB + uploads (gitignored; volume in Docker)
 
 ---
 
-## Deploy (Docker — recommended)
+## Deploy (Render — chosen strategy)
 
-Needs any small VPS (or container host) with a persistent disk:
+The repo ships a [render.yaml](./render.yaml) blueprint: a Docker web service
+with a 1 GB persistent disk mounted at `/data` (SQLite DB + uploaded images).
+
+1. Push this repo to GitHub.
+2. Render dashboard → **New → Blueprint** → select the repo. Render reads
+   `render.yaml` and prompts for the secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD`,
+   `NEXT_PUBLIC_SITE_URL`; SMTP/Razorpay whenever ready).
+3. Deploy. First boot migrates + seeds the database and creates the admin
+   user. Point the domain at the service (Render → Settings → Custom Domains).
+
+Notes:
+- The persistent disk requires a paid instance (Starter, ~$7/mo + disk).
+- With a disk attached, Render runs a single instance — exactly right for
+  SQLite. Back up the disk from the Render dashboard (Disks → Snapshots).
+- Razorpay webhook URL after go-live:
+  `https://<your-domain>/api/payment/webhook`.
+
+### Alternative: any Docker host
 
 ```bash
 docker build -t fitizens .
@@ -99,12 +116,11 @@ docker run -d --name fitizens -p 3000:3000 \
 ```
 
 Put a reverse proxy (Caddy/Nginx/Traefik) with TLS in front, and back up the
-`fitizens-data` volume (it contains the database and all uploaded images).
+`fitizens-data` volume.
 
 > ⚠️ **Serverless hosts (Netlify/Vercel) are not supported** by this build:
 > SQLite and local uploads need a persistent disk and a long-lived Node
-> process. Any $5/mo VPS (Hetzner, DigitalOcean, Lightsail) or container
-> platform with volumes (Fly.io, Railway, Render) works.
+> process.
 
 ---
 

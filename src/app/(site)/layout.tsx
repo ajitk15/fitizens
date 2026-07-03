@@ -4,7 +4,8 @@ import { StickyCTA } from "@/components/StickyCTA";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { WelcomePopup } from "@/components/WelcomePopup";
 import { getSite, getTrainer, getSocials } from "@/lib/content";
-import type { SocialLink } from "@/content/site";
+import { navLinks, type SocialLink } from "@/content/site";
+import { HIDEABLE_PAGES } from "@/lib/constants";
 
 /** JSON-LD structured data: Person + LocalBusiness for local SEO. */
 function buildJsonLd(
@@ -50,13 +51,17 @@ export default async function SiteLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const [site, trainer, socials] = await Promise.all([getSite(), getTrainer(), getSocials()]);
   const jsonLd = buildJsonLd(site, trainer, socials);
+  const hiddenHrefs = new Set<string>(
+    HIDEABLE_PAGES.filter((p) => site.hiddenPages.includes(p.key)).map((p) => p.href),
+  );
+  const visibleLinks = navLinks.filter((l) => !hiddenHrefs.has(l.href));
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header ctaLabel={site.ctaLabel} />
+      <Header ctaLabel={site.ctaLabel} links={visibleLinks} />
       <main className="flex-1">{children}</main>
       <Footer />
       <StickyCTA ctaLabel={site.ctaLabel} />
