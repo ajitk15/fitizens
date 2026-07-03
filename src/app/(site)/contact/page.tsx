@@ -3,7 +3,8 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { LeadForm } from "@/components/LeadForm";
 import { ConsultationPayment } from "@/components/ConsultationPayment";
-import { getTrainer, getSite, getConsultation } from "@/lib/content";
+import { SocialIcon } from "@/components/SocialIcon";
+import { getTrainer, getSite, getConsultation, getSocials } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Contact & Booking",
@@ -15,10 +16,11 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 export default async function ContactPage() {
-  const [trainer, site, consultation] = await Promise.all([
+  const [trainer, site, consultation, socials] = await Promise.all([
     getTrainer(),
     getSite(),
     getConsultation(),
+    getSocials(),
   ]);
   return (
     <>
@@ -70,31 +72,61 @@ export default async function ContactPage() {
               <div className="rounded-2xl border border-line bg-ink-card p-6">
                 <h3 className="font-display text-xl uppercase">Reach me directly</h3>
                 <ul className="mt-4 space-y-3 text-sm">
-                  <li className="flex items-center gap-3">
-                    <span className="text-accent">WhatsApp</span>
+                  <li>
                     <a
                       href={site.whatsappLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-muted transition-colors hover:text-accent"
+                      className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
                     >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                        <SocialIcon name="whatsapp" size={16} />
+                      </span>
                       +{trainer.whatsapp}
                     </a>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-accent">Email</span>
+                  <li>
                     <a
                       href={`mailto:${trainer.email}`}
-                      className="text-muted transition-colors hover:text-accent"
+                      className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
                     >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                        <SocialIcon name="mail" size={16} />
+                      </span>
                       {trainer.email}
                     </a>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-accent">Location</span>
-                    <span className="text-muted">{trainer.location} · Online worldwide</span>
+                  <li>
+                    <a
+                      href={`https://www.google.com/maps/search/${encodeURIComponent(trainer.location)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                        <SocialIcon name="map-pin" size={16} />
+                      </span>
+                      {trainer.location} · Online worldwide
+                    </a>
                   </li>
                 </ul>
+                {socials.length > 0 && (
+                  <div className="mt-5 flex flex-wrap gap-2 border-t border-line pt-5">
+                    {socials.map((s) => (
+                      <a
+                        key={`${s.platform}-${s.url}`}
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${s.platform} — ${s.handle} (opens in a new tab)`}
+                        title={`${s.platform} ${s.handle}`}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-accent hover:text-accent"
+                      >
+                        <SocialIcon name={s.platform} />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             </Reveal>
           </div>

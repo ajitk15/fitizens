@@ -3,6 +3,8 @@ import { asc, eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { AdminCard, AdminHeading, AdminTable, Field, Input, SubmitButton } from "@/components/admin/ui";
 import { DeleteForm } from "@/components/admin/DeleteForm";
+import { SocialFields } from "@/components/admin/SocialFields";
+import { SocialIcon } from "@/components/SocialIcon";
 import { saveSocialAction, deleteSocialAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -26,16 +28,13 @@ export default async function SocialsAdminPage({
       <AdminCard title={editing ? `Edit: ${editing.platform}` : "Add social link"}>
         <form action={saveSocialAction} className="space-y-4">
           {editing && <input type="hidden" name="id" value={editing.id} />}
+          <SocialFields
+            key={editing?.id ?? "new"}
+            defaultPlatform={editing?.platform}
+            defaultUrl={editing?.url}
+            defaultHandle={editing?.handle}
+          />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Platform" hint="e.g. Instagram, YouTube">
-              <Input name="platform" defaultValue={editing?.platform} required />
-            </Field>
-            <Field label="Handle" hint="e.g. @satya_muddena">
-              <Input name="handle" defaultValue={editing?.handle} required />
-            </Field>
-            <Field label="URL">
-              <Input name="url" type="url" defaultValue={editing?.url} required />
-            </Field>
             <Field label="Followers (optional)">
               <Input name="followers" type="number" defaultValue={editing?.followers ?? ""} />
             </Field>
@@ -52,7 +51,11 @@ export default async function SocialsAdminPage({
           {rows.map((r) => (
             <tr key={r.id}>
               <td className="px-4 py-3">
-                <Link href={`/admin/socials?edit=${r.id}`} className="font-semibold hover:text-accent">
+                <Link
+                  href={`/admin/socials?edit=${r.id}`}
+                  className="flex items-center gap-2 font-semibold hover:text-accent"
+                >
+                  <SocialIcon name={r.platform} size={16} className="text-muted" />
                   {r.platform}
                 </Link>
               </td>

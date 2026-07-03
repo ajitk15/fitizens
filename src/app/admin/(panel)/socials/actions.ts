@@ -5,11 +5,23 @@ import { redirect } from "next/navigation";
 import { getDb, schema as t } from "@/db";
 import { auditedMutation } from "@/lib/admin";
 import { str, num, optNum } from "@/lib/forms";
+import { platformFor } from "@/lib/social-platforms";
 
 function parse(formData: FormData) {
+  // Platform comes from a dropdown, but never trust the client: normalize to a
+  // known platform label. URLs must be absolute http(s).
+  const platform = platformFor(str(formData, "platform")).label;
+  let url = str(formData, "url");
+  try {
+    const u = new URL(url.includes("://") ? url : `https://${url}`);
+    if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("bad protocol");
+    url = u.toString();
+  } catch {
+    throw new Error("Please enter a valid https:// link.");
+  }
   return {
-    platform: str(formData, "platform"),
-    url: str(formData, "url"),
+    platform,
+    url,
     handle: str(formData, "handle"),
     followers: optNum(formData, "followers"),
     displayOrder: num(formData, "displayOrder"),

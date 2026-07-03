@@ -4,7 +4,8 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { StatsBar } from "@/components/StatsBar";
-import { getTrainer } from "@/lib/content";
+import { SocialIcon } from "@/components/SocialIcon";
+import { getTrainer, getSite, getSocials } from "@/lib/content";
 import { assertPageVisible } from "@/lib/pages";
 
 
@@ -20,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AboutPage() {
   await assertPageVisible("about");
-  const trainer = await getTrainer();
+  const [trainer, site, socials] = await Promise.all([getTrainer(), getSite(), getSocials()]);
   return (
     <>
       <section className="relative overflow-hidden pt-24">
@@ -84,9 +85,44 @@ export default async function AboutPage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-6 border-t border-line pt-6 text-sm text-muted">
-              <p>Email: <a className="text-accent hover:underline" href={`mailto:${trainer.email}`}>{trainer.email}</a></p>
-              <p className="mt-1">WhatsApp: +{trainer.whatsapp}</p>
+            <div className="mt-6 space-y-3 border-t border-line pt-6 text-sm">
+              <a
+                href={`mailto:${trainer.email}`}
+                className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                  <SocialIcon name="mail" size={16} />
+                </span>
+                {trainer.email}
+              </a>
+              <a
+                href={site.whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                  <SocialIcon name="whatsapp" size={16} />
+                </span>
+                +{trainer.whatsapp}
+              </a>
+              {socials.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {socials.map((s) => (
+                    <a
+                      key={`${s.platform}-${s.url}`}
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${s.platform} — ${s.handle} (opens in a new tab)`}
+                      title={`${s.platform} ${s.handle}`}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-accent hover:text-accent"
+                    >
+                      <SocialIcon name={s.platform} />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </Reveal>
         </div>

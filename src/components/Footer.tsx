@@ -2,6 +2,7 @@ import Link from "next/link";
 import { navLinks } from "@/content/site";
 import { HIDEABLE_PAGES } from "@/lib/constants";
 import { getTrainer, getSocials, getSite } from "@/lib/content";
+import { SocialIcon } from "./SocialIcon";
 
 export async function Footer() {
   const [trainer, socials, site] = await Promise.all([
@@ -55,8 +56,9 @@ export async function Footer() {
             <li>
               <a
                 href={`mailto:${trainer.email}`}
-                className="text-muted transition-colors hover:text-accent"
+                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-accent"
               >
+                <SocialIcon name="mail" size={16} />
                 {trainer.email}
               </a>
             </li>
@@ -65,24 +67,30 @@ export async function Footer() {
                 href={site.whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted transition-colors hover:text-accent"
+                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-accent"
               >
-                WhatsApp: +{trainer.whatsapp}
+                <SocialIcon name="whatsapp" size={16} />
+                +{trainer.whatsapp}
               </a>
             </li>
-            {socials.map((s) => (
-              <li key={s.platform}>
+          </ul>
+          {socials.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {socials.map((s) => (
                 <a
+                  key={`${s.platform}-${s.url}`}
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted transition-colors hover:text-accent"
+                  aria-label={`${s.platform} — ${s.handle} (opens in a new tab)`}
+                  title={`${s.platform} ${s.handle}`}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-accent hover:text-accent"
                 >
-                  {s.platform} {s.handle}
+                  <SocialIcon name={s.platform} />
                 </a>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
