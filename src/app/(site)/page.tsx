@@ -83,10 +83,10 @@ export default async function HomePage() {
             <Reveal delay={0.1} className="mt-6">
               <ul className="space-y-3">
                 {[
-                  "10+ years coaching real people to real results",
-                  "INFS Certified Nutritionist & Fitness Consultant",
+                  "10+ years of strength training, 5+ years coaching clients",
+                  "INFS-Certified Nutrition & Fitness Consultant",
                   "Plans built around your latest blood work",
-                  "Fat loss, muscle gain, photoshoot prep & lifestyle disorders",
+                  "Fat loss, muscle gain, photoshoot prep & lifestyle conditions",
                 ].map((item) => (
                   <li key={item} className="flex gap-3 text-muted">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0 text-accent" aria-hidden>

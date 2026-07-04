@@ -27,10 +27,11 @@ export async function Hero() {
           </Reveal>
           <Reveal delay={0.16}>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-muted">
-              Custom nutrition, training and supplement plans built around{" "}
-              <em className="not-italic text-fg">your</em> blood work — simple,
-              friendly coaching for fat loss, muscle building and lifestyle
-              disorders.
+              Personalized nutrition, workout and supplement plans guided by{" "}
+              <em className="not-italic font-semibold text-fg">your blood work</em> — helping you
+              lose fat, build muscle, improve metabolic health and manage
+              conditions like prediabetes, diabetes, high cholesterol and PCOS
+              with <span className="text-accent">science-based coaching</span>.
             </p>
           </Reveal>
           <Reveal delay={0.24}>

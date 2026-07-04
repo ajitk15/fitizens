@@ -22,6 +22,8 @@ export interface Trainer {
   /** Digits only, no +, used for wa.me and tel: links */
   whatsapp: string;
   certifications: string[];
+  /** Optional scan/photo of the certificate, shown on the About page. */
+  certificateImage?: string;
   profileImage: string;
   galleryImages: string[];
 }
@@ -136,20 +138,21 @@ export const trainer: Trainer = {
   brand: "FITIZENS",
   tagline: "Online Fitness Trainer",
   shortBio:
-    "INFS-certified nutrition & fitness consultant helping you lose fat, build muscle and fix lifestyle disorders — coached fully online, built around your blood work.",
+    "INFS-Certified Nutrition & Fitness Consultant providing evidence-based online coaching to help you lose fat, build muscle and improve your health — personalized to your goals, lifestyle and blood work.",
   bio: [
-    // PLACEHOLDER bio — replace with the client's final story & philosophy.
-    "I'm Satya Muddena, an online fitness trainer based in Hyderabad with 10+ years in the field. I help everyday people get genuinely fit — without the guesswork, fad diets or complicated routines.",
-    "My coaching is simple and science-led: a customized nutrition plan, a supplement protocol and a training program built specifically for you and your latest blood work. Every plan is yours alone — never copy-pasted.",
-    "I've worked with people chasing fat loss, muscle building and photoshoot-ready physiques, as well as those managing lifestyle disorders like diabetes, high blood pressure and PCOS. Whatever your starting point, the goal is the same: real, lasting results you can maintain.",
+    "I'm Satya Muddena, an INFS-certified Nutrition and Fitness Consultant and online coach based in Hyderabad. With over 10 years of personal strength training experience and more than 5 years of coaching clients, I help people lose fat, build muscle, improve their health and create habits that deliver lasting results.",
+    "My coaching combines evidence-based nutrition, resistance training, targeted supplementation and behaviour change to create a personalized, science-based approach. Every nutrition plan, training program and supplement protocol is tailored to your goals, lifestyle, food preferences, training experience, recovery capacity and blood work — never generic, templated or copy-pasted.",
+    "I've worked with individuals pursuing fat loss, muscle gain, body recomposition and photoshoot-ready physiques, as well as those managing lifestyle-related conditions such as PCOS, prediabetes, type 2 diabetes, high blood pressure and abnormal cholesterol or lipid levels.",
+    "My coaching goes far beyond providing a plan to follow. I help you build habits that fit your lifestyle, overcome the behaviours holding you back and understand the principles behind nutrition, training, recovery and long-term health. The goal is not just to help you achieve great results during our time together, but to equip you with the knowledge, skills and confidence to maintain those results long after the coaching ends.",
   ],
   philosophy:
-    "Friendly, easy and never complicated. Sustainable habits over crash diets, real coaching over generic templates.",
+    "I believe the best coaching is simple, practical and backed by science. My focus isn't on restrictive diets or quick fixes — it's on helping you build habits that lead to lasting health and fitness.\n\nEvery nutrition plan, training program and recommendation is tailored to your goals, lifestyle, food preferences, health and individual needs. There are no generic templates or one-size-fits-all approaches.\n\nBeyond giving you a plan to follow, I'll help you understand the why behind nutrition, training, recovery and lifestyle habits, so you can make informed decisions and maintain your results long after our coaching journey ends.",
   yearsExperience: 10,
   location: "Hyderabad, Telangana",
   email: "satya.muddena@gmail.com",
   whatsapp: "919949191359",
-  certifications: ["INFS Certified Nutritionist & Fitness Consultant"],
+  certifications: ["INFS-Certified Nutrition & Fitness Consultant"],
+  certificateImage: "/images/infs-certificate.jpeg",
   profileImage: "/images/image1.jpeg",
   galleryImages: [
     "/images/image1.jpeg",
@@ -174,17 +177,17 @@ export const stats: Stat[] = [
 /*  Prices are hidden in the UI (client request) but stored here.      */
 /* ------------------------------------------------------------------ */
 const SHARED_FEATURES: string[] = [
-  "Customized nutrition plan built around your latest blood work",
-  "Personalised supplement protocol",
-  "Training program tailored to your goals",
-  "Daily workout video reviews until your form is perfect",
-  "Daily progress tracking — weight, steps, sleep & water intake",
-  "WhatsApp support during IST working hours",
-  "One scheduled follow-up call every week",
+  "Customized nutrition plan tailored to your eating habits, food preferences, lifestyle and individual goals",
+  "Personalized training program designed around your experience level, fitness goals, recovery capacity, equipment availability and weekly schedule",
+  "Daily workout video reviews with individualized feedback to improve exercise technique, movement quality and lifting performance",
+  "Comprehensive progress tracking — daily body weight, step count, sleep, hydration and digestion, plus monthly body measurements and progress-photo assessments",
+  "Personalized supplement protocol based on a full review of your blood work — vitamin and mineral status, complete blood count (CBC), lipid profile, glucose markers and other clinically relevant biomarkers",
+  "Weekly 1-on-1 coaching call to review progress, address challenges and refine your nutrition, training and recovery plan",
+  "Ongoing WhatsApp support throughout the week, with responses during IST business hours",
 ];
 
 const ONLINE_NOTE =
-  "This is an online coaching service and does not include 1-on-1 video coaching sessions or in-person personal training.";
+  "Please note this is a fully online coaching service and does not include 1-on-1 video consultations or in-person personal training sessions.";
 
 export const programs: Program[] = [
   {
@@ -194,7 +197,7 @@ export const programs: Program[] = [
     shortDescription:
       "A focused 12-week online coaching block to kick-start your transformation.",
     fullDescription:
-      "A complete 12-week online coaching block — the ideal starting point to build momentum, learn the fundamentals and see your first real changes. " +
+      "A comprehensive 12-week online coaching program designed to establish sustainable habits, build a strong foundation and deliver measurable results. Throughout the program you'll receive structured guidance, personalized support and accountability to help you achieve your goals. " +
       ONLINE_NOTE,
     features: SHARED_FEATURES,
     goalTags: ["fat-loss", "muscle-gain", "lifestyle"],
@@ -250,7 +253,7 @@ export const consultation = {
   price: 3000,
   currency: "INR",
   durationLabel: "30–45 min",
-  note: "The ₹3,000 consultation fee is fully adjusted against your package fee once you enrol — you simply pay the remaining balance.",
+  note: "If you choose to enrol afterwards, your entire consultation fee is deducted from your coaching package, so you only pay the remaining balance.",
 };
 
 /* ------------------------------------------------------------------ */
@@ -338,19 +341,19 @@ export const faqs: Faq[] = [
   {
     question: "How does the consultation call work?",
     answer:
-      "Book a 30–45 minute consultation call for ₹3,000. We'll discuss your goals, current lifestyle and the best plan for you. If you enrol, the ₹3,000 is fully adjusted against your package — you only pay the remaining balance.",
+      "Start with a 30–45-minute consultation call for ₹3,000 to discuss your fitness goals, health history, lifestyle and the best strategy to help you achieve lasting results. If you choose to enrol afterwards, your entire consultation fee is deducted from your coaching package, so you only pay the remaining balance.",
     category: "Consultation Call",
   },
   {
     question: "What's included in the coaching?",
     answer:
-      "Every package includes a customized nutrition plan based on your latest blood work, a supplement protocol, a tailored training program, daily workout video reviews, daily progress tracking (weight, steps, sleep and water), WhatsApp support during IST working hours, and one scheduled follow-up call every week.",
+      "Every package includes a customized nutrition plan, a personalized training program, daily workout video reviews with individualized feedback, comprehensive progress tracking (daily weight, steps, sleep, hydration and digestion, plus monthly measurements and photos), a personalized supplement protocol based on a full review of your blood work, a weekly 1-on-1 coaching call and ongoing WhatsApp support during IST business hours.",
     category: "Services Provided",
   },
   {
     question: "Is this online or in-person coaching?",
     answer:
-      "Coaching is fully online. It does not include 1-on-1 video coaching sessions or in-person personal training — everything is delivered through your custom plans, daily tracking, WhatsApp support and your weekly follow-up call.",
+      "Coaching is fully online and does not include 1-on-1 video consultations or in-person personal training sessions. Everything is delivered through your custom plans, daily tracking, ongoing WhatsApp support and your weekly 1-on-1 coaching call.",
     category: "Services Provided",
   },
   {

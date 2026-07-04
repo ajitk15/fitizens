@@ -19,6 +19,8 @@ export const trainer = sqliteTable("trainer", {
   email: text("email").notNull(),
   whatsapp: text("whatsapp").notNull(),
   certificationsJson: text("certifications_json").notNull(), // string[]
+  /** Optional scan/photo of the certificate, shown on the About page. */
+  certificateImage: text("certificate_image"),
   profileImage: text("profile_image").notNull(),
   galleryImagesJson: text("gallery_images_json").notNull(), // string[]
 });

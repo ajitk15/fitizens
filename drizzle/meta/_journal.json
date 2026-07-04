@@ -29,6 +29,13 @@
       "when": 1783041334130,
       "tag": "0003_hidden-pages",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783186878829,
+      "tag": "0004_certificate-image",
+      "breakpoints": true
     }
   ]
 }

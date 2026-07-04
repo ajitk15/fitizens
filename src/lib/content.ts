@@ -60,6 +60,7 @@ export const getTrainer = cache(async (): Promise<Trainer> =>
       email: row.email,
       whatsapp: row.whatsapp,
       certifications: json<string[]>(row.certificationsJson, fallback.trainer.certifications),
+      certificateImage: row.certificateImage ?? undefined,
       profileImage: row.profileImage || fallback.trainer.profileImage,
       galleryImages: json<string[]>(row.galleryImagesJson, fallback.trainer.galleryImages),
     };

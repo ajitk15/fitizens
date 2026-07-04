@@ -110,7 +110,11 @@ export function ConsultationPayment({ consultation = fallbackConsultation }: Con
       <p className="mt-4 font-display text-4xl text-accent">
         ₹{consultation.price.toLocaleString("en-IN")}
       </p>
-      <p className="mt-3 text-sm text-muted">{consultation.note}</p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">
+        A focused call to discuss your fitness goals, health history, lifestyle
+        and the best strategy to help you achieve lasting results.
+      </p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">{consultation.note}</p>
 
       <Button onClick={handlePay} size="lg" className="mt-6 w-full" disabled={loading}>
         {loading ? "Starting…" : `Pay ₹${consultation.price.toLocaleString("en-IN")} & Book`}

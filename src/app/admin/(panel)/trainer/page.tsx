@@ -66,8 +66,8 @@ export default async function TrainerAdminPage({
             <Field label="Bio paragraphs" hint="One paragraph per line.">
               <Textarea name="bio" rows={6} defaultValue={trainer.bio.join("\n")} />
             </Field>
-            <Field label="Philosophy">
-              <Textarea name="philosophy" defaultValue={trainer.philosophy} />
+            <Field label="Philosophy" hint="Separate paragraphs with a blank line.">
+              <Textarea name="philosophy" rows={6} defaultValue={trainer.philosophy} />
             </Field>
             <Field label="Certifications" hint="One per line.">
               <Textarea name="certifications" defaultValue={trainer.certifications.join("\n")} />
@@ -78,6 +78,12 @@ export default async function TrainerAdminPage({
         <AdminCard title="Images">
           <div className="space-y-4">
             <ImageUploadField name="profileImage" label="Profile image" kind="profile" defaultValue={trainer.profileImage} />
+            <ImageUploadField
+              name="certificateImage"
+              label="Certificate image"
+              kind="program"
+              defaultValue={trainer.certificateImage ?? ""}
+            />
             <div>
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                 Gallery images (About page)

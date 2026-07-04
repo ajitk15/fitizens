@@ -5,6 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { StatsBar } from "@/components/StatsBar";
 import { SocialIcon } from "@/components/SocialIcon";
+import { CertificateViewer } from "@/components/CertificateViewer";
 import { getTrainer, getSite, getSocials } from "@/lib/content";
 import { assertPageVisible } from "@/lib/pages";
 
@@ -69,8 +70,16 @@ export default async function AboutPage() {
         <div className="grid gap-12 lg:grid-cols-2">
           <Reveal className="rounded-2xl border border-line bg-ink-card p-8">
             <h3 className="font-display text-2xl uppercase">My Philosophy</h3>
-            <p className="mt-4 leading-relaxed text-muted">{trainer.philosophy}</p>
-            <p className="mt-4 leading-relaxed text-muted">{trainer.bio[2]}</p>
+            <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+              Science-Based. Personalized. Sustainable.
+            </p>
+            <div className="mt-4 space-y-4">
+              {trainer.philosophy.split("\n\n").map((para, i) => (
+                <p key={i} className="leading-relaxed text-muted">
+                  {para}
+                </p>
+              ))}
+            </div>
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl border border-line bg-ink-card p-8">
             <h3 className="font-display text-2xl uppercase">Certifications</h3>
@@ -85,6 +94,16 @@ export default async function AboutPage() {
                 </li>
               ))}
             </ul>
+
+            {/* Certificate — opens in an in-page lightbox (admin-controlled) */}
+            {trainer.certificateImage && (
+              <CertificateViewer
+                src={trainer.certificateImage}
+                alt={`${trainer.certifications[0] ?? "Certificate"} awarded to ${trainer.fullName}`}
+                caption="INFS Certificate of Completion · Verifiable at infs.co.in"
+              />
+            )}
+
             <div className="mt-6 space-y-3 border-t border-line pt-6 text-sm">
               <a
                 href={`mailto:${trainer.email}`}

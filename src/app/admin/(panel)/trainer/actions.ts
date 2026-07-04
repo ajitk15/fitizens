@@ -72,6 +72,7 @@ export async function updateTrainerAction(formData: FormData) {
           email: str(formData, "email"),
           whatsapp: str(formData, "whatsapp").replace(/\D/g, ""),
           certificationsJson: lines(formData, "certifications"),
+          certificateImage: str(formData, "certificateImage") || null,
           profileImage: str(formData, "profileImage"),
           galleryImagesJson: JSON.stringify(gallery),
         })
