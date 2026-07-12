@@ -149,6 +149,11 @@ export default async function HomePage() {
             className="mb-12"
           />
           <TestimonialCarousel testimonials={testimonials.filter((t) => t.featured)} />
+          <Reveal className="mt-10 text-center">
+            <ButtonLink href="/testimonials" variant="secondary">
+              View all testimonials
+            </ButtonLink>
+          </Reveal>
         </div>
       </section>
 
