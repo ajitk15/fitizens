@@ -51,6 +51,13 @@ export function PostForm({ post }: { post?: PostRow }) {
             <Textarea name="body" rows={18} defaultValue={post?.bodyMd} className="font-mono text-xs" />
           </Field>
           <Checkbox name="isPublished" label="Published (visible on the site)" defaultChecked={post?.isPublished ?? false} />
+          <div>
+            <Checkbox name="notify" label="Email subscribers about this post" />
+            <p className="mt-1 pl-6 text-xs text-muted/70">
+              Sends the newsletter once when you save (published posts only) — leave unchecked
+              on later edits to avoid duplicate emails.
+            </p>
+          </div>
         </div>
       </AdminCard>
       <SubmitButton>{post ? "Save post" : "Create post"}</SubmitButton>

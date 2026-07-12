@@ -21,7 +21,6 @@ export const IMAGE_SPECS = {
     label: "Best: 900×1200 (3:4 portrait) — client photo or before/after collage",
   },
   post: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
-  event: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
 } as const satisfies Record<string, ImageSpec>;
 
 export type ImageKind = keyof typeof IMAGE_SPECS;

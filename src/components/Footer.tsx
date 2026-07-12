@@ -3,6 +3,7 @@ import { navLinks } from "@/content/site";
 import { HIDEABLE_PAGES } from "@/lib/constants";
 import { getTrainer, getSocials, getSite } from "@/lib/content";
 import { SocialIcon } from "./SocialIcon";
+import { SubscribeBox } from "./SubscribeBox";
 
 export async function Footer() {
   const [trainer, socials, site] = await Promise.all([
@@ -28,6 +29,12 @@ export async function Footer() {
           <p className="mt-4 text-sm text-muted">
             {trainer.fullName} · {trainer.location}
           </p>
+          <div className="mt-6 max-w-sm">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-fg">
+              Newsletter
+            </h3>
+            <SubscribeBox />
+          </div>
         </div>
 
         <div>

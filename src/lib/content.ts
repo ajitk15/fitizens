@@ -12,7 +12,6 @@ import type {
   SocialLink,
   Post,
   PostListItem,
-  EventItem,
 } from "@/content/site";
 
 /* ------------------------------------------------------------------ */
@@ -271,91 +270,3 @@ export const getPost = cache(async (slug: string): Promise<Post | null> =>
   }, null),
 );
 
-/* ------------------------------------------------------------------ */
-/*  Events — DB-only; empty until the admin posts events.              */
-/* ------------------------------------------------------------------ */
-
-function mapEvent(r: typeof t.events.$inferSelect, confirmedCount: number): EventItem {
-  return {
-    id: r.id,
-    slug: r.slug,
-    title: r.title,
-    summary: r.summary,
-    descriptionMd: r.descriptionMd,
-    image: r.image ?? undefined,
-    location: r.location,
-    mode: r.mode as EventItem["mode"],
-    startAt: r.startAt,
-    endAt: r.endAt ?? undefined,
-    capacity: r.capacity ?? undefined,
-    pricePaise: r.pricePaise,
-    currency: r.currency,
-    status: r.status as EventItem["status"],
-    confirmedCount,
-  };
-}
-
-function confirmedCounts(): Map<number, number> {
-  const rows = getDb()
-    .select({ eventId: t.eventRegistrations.eventId })
-    .from(t.eventRegistrations)
-    .where(eq(t.eventRegistrations.status, "confirmed"))
-    .all();
-  const map = new Map<number, number>();
-  for (const r of rows) map.set(r.eventId, (map.get(r.eventId) ?? 0) + 1);
-  return map;
-}
-
-export const getEvents = cache(async (): Promise<EventItem[]> =>
-  safe(() => {
-    const rows = getDb()
-      .select()
-      .from(t.events)
-      .where(eq(t.events.status, "published"))
-      .orderBy(asc(t.events.startAt))
-      .all();
-    const counts = confirmedCounts();
-    return rows.map((r) => mapEvent(r, counts.get(r.id) ?? 0));
-  }, []),
-);
-
-export const getEvent = cache(async (slug: string): Promise<EventItem | null> =>
-  safe(() => {
-    const r = getDb().select().from(t.events).where(eq(t.events.slug, slug)).get();
-    if (!r || r.status === "draft") return null;
-    const counts = confirmedCounts();
-    return mapEvent(r, counts.get(r.id) ?? 0);
-  }, null),
-);
-
-/** Events split by start time — computed here so components stay pure. */
-export const getEventsSplit = cache(
-  async (): Promise<{ upcoming: EventItem[]; past: EventItem[] }> => {
-    const events = await getEvents();
-    const now = Date.now();
-    return {
-      upcoming: events.filter((e) => new Date(e.startAt).getTime() >= now),
-      past: events
-        .filter((e) => new Date(e.startAt).getTime() < now)
-        .sort((a, b) => (a.startAt < b.startAt ? 1 : -1)),
-    };
-  },
-);
-
-/** Registration-relevant view of one event (seat math + time), kept out of render. */
-export const getEventView = cache(async (slug: string) => {
-  const event = await getEvent(slug);
-  if (!event) return null;
-  const seatsLeft = event.capacity == null ? null : Math.max(0, event.capacity - event.confirmedCount);
-  const isPast = new Date(event.startAt).getTime() < Date.now();
-  const isSoldOut = seatsLeft === 0;
-  const isCancelled = event.status === "cancelled";
-  return {
-    event,
-    seatsLeft,
-    isPast,
-    isSoldOut,
-    isCancelled,
-    isOpen: !isPast && !isSoldOut && !isCancelled && event.status === "published",
-  };
-});

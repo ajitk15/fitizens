@@ -25,10 +25,10 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      # Canonical site URL (e.g. https://fitizens.in) for SEO + receipts.
+      # Canonical site URL (e.g. https://fitizens.in) for SEO + newsletter links.
       - key: NEXT_PUBLIC_SITE_URL
         sync: false
-      # Optional — email (leads/receipts log to console until set).
+      # Optional — email (enquiries/newsletters log to console until set).
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -38,11 +38,4 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: LEAD_TO_EMAIL
-        sync: false
-      # Optional — Razorpay (pay buttons show "coming soon" until set).
-      - key: RAZORPAY_KEY_ID
-        sync: false
-      - key: RAZORPAY_KEY_SECRET
-        sync: false
-      - key: RAZORPAY_WEBHOOK_SECRET
         sync: false

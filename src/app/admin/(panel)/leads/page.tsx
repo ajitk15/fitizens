@@ -9,7 +9,7 @@ export default async function LeadsAdminPage() {
   const leads = getDb().select().from(t.leads).orderBy(desc(t.leads.id)).all();
   return (
     <>
-      <AdminHeading title="Leads" />
+      <AdminHeading title="Enquiries" />
       <AdminTable headers={["Contact", "Goal / Level", "Message", "Received", "Status", ""]}>
         {leads.map((l) => (
           <tr key={l.id}>
@@ -64,7 +64,7 @@ export default async function LeadsAdminPage() {
         {leads.length === 0 && (
           <tr>
             <td colSpan={6} className="px-4 py-8 text-center text-muted">
-              No leads yet.
+              No enquiries yet.
             </td>
           </tr>
         )}

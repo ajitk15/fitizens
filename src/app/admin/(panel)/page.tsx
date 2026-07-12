@@ -10,10 +10,8 @@ export default async function AdminDashboard() {
   const c = (q: string) => db.get<{ c: number }>(sql.raw(`SELECT COUNT(*) AS c FROM ${q}`))?.c ?? 0;
 
   const stats = [
-    { label: "New leads", value: c("leads WHERE status = 'new'"), href: "/admin/leads" },
-    { label: "Published events", value: c("events WHERE status = 'published'"), href: "/admin/events" },
-    { label: "Confirmed registrations", value: c("event_registrations WHERE status = 'confirmed'"), href: "/admin/registrations" },
-    { label: "Paid orders", value: c("orders WHERE status = 'paid'"), href: "/admin/orders" },
+    { label: "New enquiries", value: c("leads WHERE status = 'new'"), href: "/admin/leads" },
+    { label: "Newsletter subscribers", value: c("subscribers WHERE status = 'subscribed'"), href: "/admin/newsletter" },
     { label: "Blog posts", value: c("posts"), href: "/admin/posts" },
     { label: "Programs", value: c("programs"), href: "/admin/programs" },
   ];
@@ -36,9 +34,9 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Latest leads">
+        <AdminCard title="Latest enquiries">
           {recentLeads.length === 0 ? (
-            <p className="text-sm text-muted">No leads yet.</p>
+            <p className="text-sm text-muted">No enquiries yet.</p>
           ) : (
             <ul className="space-y-3">
               {recentLeads.map((l) => (

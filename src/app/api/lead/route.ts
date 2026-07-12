@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { getTrainer } from "@/lib/content";
+import { sendMail } from "@/lib/mail";
+import { upsertSubscriber } from "@/lib/newsletter";
 
 /**
- * Lead capture endpoint.
+ * Consultation enquiry endpoint.
  *
- * Validates the submission, rejects bots via a honeypot, then emails the lead
- * to the trainer. Email is sent only when SMTP credentials are configured;
- * otherwise the lead is logged server-side and we still return 200 so the
- * client UX works during development / before the email service is connected.
- *
- * Required env for live email (see .env.example):
- *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, LEAD_TO_EMAIL (optional)
+ * Validates the submission, rejects bots via a honeypot, persists the enquiry
+ * (visible in /admin/leads) and emails it to the trainer when SMTP is
+ * configured. With `subscribe: true` the sender also joins the newsletter.
  */
 
 interface LeadPayload {
@@ -24,6 +21,8 @@ interface LeadPayload {
   email?: string;
   preferredDateTime?: string;
   message?: string;
+  /** Newsletter opt-in from the form checkbox. */
+  subscribe?: boolean;
   company?: string; // honeypot
 }
 
@@ -96,47 +95,45 @@ export async function POST(request: Request) {
     console.error("[lead] DB persist failed:", err);
   }
 
-  const trainer = await getTrainer();
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  const to = process.env.LEAD_TO_EMAIL || trainer.email;
-
-  if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS) {
+  // Newsletter opt-in — requires an email address; never blocks the enquiry.
+  if (body.subscribe && body.email) {
     try {
-      const transporter = nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: Number(SMTP_PORT),
-        secure: Number(SMTP_PORT) === 465,
-        auth: { user: SMTP_USER, pass: SMTP_PASS },
-      });
-
-      await transporter.sendMail({
-        from: `"FITIZENS Website" <${SMTP_USER}>`,
-        to,
-        replyTo: body.email || undefined,
-        subject: `New consultation lead — ${lead.name}`,
-        text: [
-          `New lead from the FITIZENS website:`,
-          ``,
-          `Name: ${lead.name}`,
-          `WhatsApp: ${lead.whatsapp}`,
-          `Email: ${lead.email}`,
-          `Goal: ${lead.goal}`,
-          `Level: ${lead.level}`,
-          `Preferred date/time: ${lead.preferredDateTime}`,
-          `Message: ${lead.message}`,
-          ``,
-          `Received: ${lead.receivedAt}`,
-        ].join("\n"),
+      upsertSubscriber({
+        email: body.email,
+        name,
+        source: "consultation",
+        meta: {
+          ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
+          userAgent: request.headers.get("user-agent"),
+        },
       });
     } catch (err) {
-      // Lead is already saved in the DB (visible in /admin/leads) — email is
-      // best-effort, so the visitor still gets a success response.
-      console.error("[lead] email send failed (lead saved to DB):", err);
+      console.error("[lead] newsletter opt-in failed:", err);
     }
-  } else {
-    // No SMTP configured yet — log so nothing is lost during setup.
-    console.info("[lead] SMTP not configured. Lead payload:", lead);
   }
+
+  const trainer = await getTrainer();
+  const to = process.env.LEAD_TO_EMAIL || trainer.email;
+  // Best-effort: the enquiry is already saved in the DB (visible in
+  // /admin/leads); without SMTP sendMail just logs.
+  await sendMail({
+    to,
+    subject: `New consultation enquiry — ${lead.name}`,
+    text: [
+      `New enquiry from the FITIZENS website:`,
+      ``,
+      `Name: ${lead.name}`,
+      `WhatsApp: ${lead.whatsapp}`,
+      `Email: ${lead.email}`,
+      `Goal: ${lead.goal}`,
+      `Level: ${lead.level}`,
+      `Preferred date/time: ${lead.preferredDateTime}`,
+      `Message: ${lead.message}`,
+      `Newsletter opt-in: ${body.subscribe ? "yes" : "no"}`,
+      ``,
+      `Received: ${lead.receivedAt}`,
+    ].join("\n"),
+  });
 
   return NextResponse.json({ ok: true });
 }

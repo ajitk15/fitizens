@@ -140,64 +140,23 @@ export const siteSettings = sqliteTable("site_settings", {
 });
 
 /* ------------------------------------------------------------------ */
-/*  Events & registrations                                             */
+/*  Newsletter subscribers                                             */
 /* ------------------------------------------------------------------ */
 
-export const events = sqliteTable("events", {
+export const subscribers = sqliteTable("subscribers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  slug: text("slug").notNull().unique(),
-  title: text("title").notNull(),
-  summary: text("summary").notNull(),
-  descriptionMd: text("description_md").notNull().default(""),
-  image: text("image"),
-  location: text("location").notNull().default("Online"),
-  mode: text("mode").notNull().default("online"), // 'online' | 'in-person'
-  startAt: text("start_at").notNull(), // ISO datetime
-  endAt: text("end_at"),
-  capacity: integer("capacity"), // null = unlimited
-  pricePaise: integer("price_paise").notNull().default(0), // 0 = free
-  currency: text("currency").notNull().default("INR"),
-  status: text("status").notNull().default("draft"), // draft|published|cancelled|completed
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  /** Per-subscriber secret used in the unsubscribe link. */
+  token: text("token").notNull().unique(),
+  status: text("status").notNull().default("subscribed"), // subscribed|unsubscribed
+  source: text("source").notNull().default("site"), // consultation|footer
   createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-export const eventRegistrations = sqliteTable("event_registrations", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  eventId: integer("event_id")
-    .notNull()
-    .references(() => events.id),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  whatsapp: text("whatsapp").notNull(),
-  status: text("status").notNull().default("pending_payment"), // pending_payment|confirmed|cancelled
-  orderId: integer("order_id"),
-  createdAt: text("created_at").notNull(),
+  unsubscribedAt: text("unsubscribed_at"),
 });
 
 /* ------------------------------------------------------------------ */
-/*  Payments                                                           */
-/* ------------------------------------------------------------------ */
-
-export const orders = sqliteTable("orders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  kind: text("kind").notNull(), // 'consultation' | 'event'
-  registrationId: integer("registration_id"),
-  razorpayOrderId: text("razorpay_order_id").notNull().unique(),
-  razorpayPaymentId: text("razorpay_payment_id"),
-  amountPaise: integer("amount_paise").notNull(),
-  currency: text("currency").notNull().default("INR"),
-  status: text("status").notNull().default("created"), // created|paid|failed
-  customerName: text("customer_name"),
-  customerEmail: text("customer_email"),
-  customerPhone: text("customer_phone"),
-  error: text("error"),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-/* ------------------------------------------------------------------ */
-/*  Leads                                                              */
+/*  Leads / consultation enquiries                                     */
 /* ------------------------------------------------------------------ */
 
 export const leads = sqliteTable("leads", {

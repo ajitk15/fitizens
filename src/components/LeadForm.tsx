@@ -17,6 +17,8 @@ interface FormState {
   email: string;
   preferredDateTime: string;
   message: string;
+  /** Newsletter opt-in. */
+  subscribe: boolean;
   /** Honeypot — must stay empty. */
   company: string;
 }
@@ -29,6 +31,7 @@ const initial: FormState = {
   email: "",
   preferredDateTime: "",
   message: "",
+  subscribe: false,
   company: "",
 };
 
@@ -90,8 +93,8 @@ export function LeadForm() {
         <h3 className="mt-4 font-display text-2xl uppercase">Request received!</h3>
         <p className="mt-2 text-muted">
           Thanks {form.name.split(" ")[0]} — I&apos;ll reach out on WhatsApp
-          shortly to confirm your consultation. You can also book a slot directly
-          below.
+          shortly to confirm your consultation.
+          {form.subscribe && form.email && " You're also on the newsletter list — welcome!"}
         </p>
       </div>
     );
@@ -216,6 +219,23 @@ export function LeadForm() {
                   placeholder="Tell me a little about where you're starting from…"
                 />
               </Field>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
+                <input
+                  type="checkbox"
+                  checked={form.subscribe}
+                  onChange={(e) => update({ subscribe: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent,#ff5722)]"
+                />
+                <span className="text-sm text-muted">
+                  Send me the FITIZENS newsletter — fitness tips and updates. Unsubscribe
+                  anytime with one click.
+                  {!form.email && form.subscribe && (
+                    <span className="mt-1 block text-xs text-accent">
+                      Add your email above so we know where to send it.
+                    </span>
+                  )}
+                </span>
+              </label>
             </fieldset>
           )}
         </motion.div>

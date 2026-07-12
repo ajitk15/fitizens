@@ -6,8 +6,8 @@ or third-party services required. Next.js (App Router) + Tailwind CSS + Framer
 Motion + **SQLite**. Dark-first design with an electric-orange accent.
 
 Everything the site shows — trainer profile, email & phone, social links,
-programs, transformations, testimonials, FAQs, blog posts, events, prices — is
-editable at **`/admin`** and reflects across the whole site immediately.
+programs, testimonials, FAQs, blog posts, prices — is editable at **`/admin`**
+and reflects across the whole site immediately.
 
 ---
 
@@ -41,21 +41,18 @@ npx drizzle-kit generate       # regenerate SQL migrations after schema changes
 ```
 src/
 ├─ app/
-│  ├─ (site)/               # public pages (Home, About, Programs, Events,
-│  │                        #   Transformations, Blog, Tools, Contact)
+│  ├─ (site)/               # public pages (Home, About, Programs,
+│  │                        #   Testimonials, Blog, Tools, Contact, Unsubscribe)
 │  ├─ admin/                # built-in admin panel (login + CRUD + audit log)
 │  ├─ api/
-│  │  ├─ lead/              # lead capture → DB + email
-│  │  ├─ events/register/   # event registration (free + paid)
-│  │  ├─ payment/order      # Razorpay order creation (amounts derived server-side)
-│  │  ├─ payment/verify     # HMAC signature verification (never trust the client)
-│  │  ├─ payment/webhook    # Razorpay webhook safety net (raw-body HMAC)
+│  │  ├─ lead/              # consultation enquiries → DB + email
+│  │  ├─ subscribe/         # newsletter signups (footer box + form opt-in)
 │  │  └─ admin/upload       # image uploads (content-hashed, stored in DATA_DIR)
 │  └─ uploads/[...path]/    # serves uploaded images
 ├─ components/              # public UI + components/admin/* primitives
 ├─ content/site.ts          # typed default content (used to seed + as fallback)
 ├─ db/                      # Drizzle schema, SQLite bootstrap, seeding
-├─ lib/                     # content getters, auth, audit, mail, razorpay
+├─ lib/                     # content getters, auth, audit, mail, newsletter
 └─ proxy.ts                 # /admin cookie redirect (auth enforced in-request)
 drizzle/                    # generated SQL migrations (applied on boot)
 data/                       # SQLite DB + uploads (gitignored; volume in Docker)
@@ -66,21 +63,17 @@ data/                       # SQLite DB + uploads (gitignored; volume in Docker)
 - **Auth**: single admin user, scrypt-hashed password, DB-backed sessions with
   hashed tokens in an httpOnly cookie. Every admin action re-checks the session.
 - **Audit**: append-only `audit_log` records every content change (with
-  before/after), login attempt, lead, registration and payment event —
-  browsable at `/admin/audit`.
-- **Payments**: Razorpay via its REST API (no SDK). Order amounts are always
-  derived server-side; success requires HMAC signature verification
-  (`/api/payment/verify`), with `/api/payment/webhook` as the safety net for
-  dropped clients. Orders are persisted with full lifecycle status.
-- **Events**: post bootcamps/workshops in `/admin/events`; visitors register on
-  `/events/<slug>` — free events confirm instantly, paid events confirm after
-  payment. Capacity is enforced. Attendees get email confirmations (when SMTP
-  is configured).
+  before/after), login attempt, enquiry, subscribe/unsubscribe and newsletter
+  send — browsable at `/admin/audit`.
+- **Newsletter**: visitors opt in on the consultation form or the footer
+  subscribe box. Admin sends professional HTML newsletters from
+  `/admin/newsletter` (ad-hoc) or by ticking "Email subscribers" when saving a
+  blog post. Every email carries a per-subscriber unsubscribe link
+  (`/unsubscribe?token=…`).
 - **Blog**: markdown body, edited in `/admin/posts`, rendered with the same
   typography as before.
-- **Graceful degradation**: without SMTP/Razorpay/Instagram keys the site runs
-  fully — email logs to console, pay buttons show "coming soon", the Instagram
-  section shows a follow card.
+- **Graceful degradation**: without SMTP/Instagram keys the site runs fully —
+  email logs to console, the Instagram section shows a follow card.
 
 ---
 
@@ -92,7 +85,7 @@ with a 1 GB persistent disk mounted at `/data` (SQLite DB + uploaded images).
 1. Push this repo to GitHub.
 2. Render dashboard → **New → Blueprint** → select the repo. Render reads
    `render.yaml` and prompts for the secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD`,
-   `NEXT_PUBLIC_SITE_URL`; SMTP/Razorpay whenever ready).
+   `NEXT_PUBLIC_SITE_URL`; SMTP whenever ready).
 3. Deploy. First boot migrates + seeds the database and creates the admin
    user. Point the domain at the service (Render → Settings → Custom Domains).
 
@@ -100,8 +93,6 @@ Notes:
 - The persistent disk requires a paid instance (Starter, ~$7/mo + disk).
 - With a disk attached, Render runs a single instance — exactly right for
   SQLite. Back up the disk from the Render dashboard (Disks → Snapshots).
-- Razorpay webhook URL after go-live:
-  `https://<your-domain>/api/payment/webhook`.
 
 ### Alternative: any Docker host
 
@@ -127,13 +118,8 @@ Put a reverse proxy (Caddy/Nginx/Traefik) with TLS in front, and back up the
 ## Environment variables
 
 See [.env.example](./.env.example). Only `ADMIN_EMAIL` / `ADMIN_PASSWORD` are
-required to get a working site + admin. SMTP (lead/receipt emails), Razorpay
-(payments) and analytics IDs can be added whenever the accounts are ready.
-
-For Razorpay go-live: set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and create
-a webhook in the Razorpay dashboard pointing at
-`https://<domain>/api/payment/webhook` (events `payment.captured` +
-`payment.failed`) with `RAZORPAY_WEBHOOK_SECRET`.
+required to get a working site + admin. SMTP (enquiry + newsletter emails) and
+analytics IDs can be added whenever the accounts are ready.
 
 ---
 
@@ -145,14 +131,13 @@ Everything is at **`/admin`**:
 |---|---|
 | Trainer | Name, tagline, bio, **email**, **WhatsApp number**, certifications, photos, stats bar |
 | Programs | Coaching packages (cards, detail pages, prices) |
-| Transformations | Before/after gallery (with consent flag) |
-| Testimonials | Client quotes and ratings |
+| Testimonials | Client quotes, ratings and before/after collages |
 | FAQs | Q&A by category |
 | Socials | **Instagram / YouTube / Facebook /…** links shown in the footer & JSON-LD |
-| Blog Posts | Markdown articles |
-| Events | Bootcamps/workshops with price, capacity and status |
-| Registrations / Orders / Leads | Inboxes for everything visitors submit |
-| Settings | Site URL, SEO keywords, consultation price |
+| Blog Posts | Markdown articles (+ optional "email subscribers" on save) |
+| Newsletter | Subscriber list + ad-hoc newsletter composer |
+| Enquiries | Consultation requests from the contact form |
+| Settings | Site URL, SEO keywords, headlines, consultation price |
 | Audit Log | Who changed what, when, with before/after |
 
 Design decision: **program prices are intentionally hidden** on the public site

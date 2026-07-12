@@ -93,29 +93,6 @@ export interface Post extends PostListItem {
   body: string;
 }
 
-/** Event posted by the trainer (bootcamp, workshop, challenge …). */
-export interface EventItem {
-  id: number;
-  slug: string;
-  title: string;
-  summary: string;
-  descriptionMd: string;
-  image?: string;
-  location: string;
-  mode: "online" | "in-person";
-  /** ISO datetimes. */
-  startAt: string;
-  endAt?: string;
-  /** Undefined = unlimited seats. */
-  capacity?: number;
-  /** 0 = free event. */
-  pricePaise: number;
-  currency: string;
-  status: "draft" | "published" | "cancelled" | "completed";
-  /** Number of confirmed registrations (computed). */
-  confirmedCount: number;
-}
-
 /* ------------------------------------------------------------------ */
 /*  Trainer profile                                                    */
 /* ------------------------------------------------------------------ */
@@ -402,7 +379,6 @@ export const navLinks = [
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
   { label: "Testimonials", href: "/testimonials" },
-  { label: "Events", href: "/events" },
   { label: "Tools", href: "/tools" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { LeadForm } from "@/components/LeadForm";
-import { ConsultationPayment } from "@/components/ConsultationPayment";
 import { SocialIcon } from "@/components/SocialIcon";
 import { getTrainer, getSite, getConsultation, getSocials } from "@/lib/content";
 
@@ -42,10 +41,17 @@ export default async function ContactPage() {
             <LeadForm />
           </Reveal>
 
-          {/* Booking + payment + direct contact */}
+          {/* Booking info + direct contact */}
           <div className="space-y-8">
             <Reveal delay={0.1}>
-              <ConsultationPayment consultation={consultation} />
+              <div className="rounded-2xl border border-accent/40 bg-ink-card p-6 shadow-glow">
+                <h3 className="font-display text-xl uppercase">Consultation call</h3>
+                <p className="mt-3 font-display text-4xl text-accent">
+                  ₹{consultation.price.toLocaleString("en-IN")}
+                  <span className="ml-2 text-base text-muted">· {consultation.durationLabel}</span>
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">{consultation.note}</p>
+              </div>
             </Reveal>
 
             <Reveal delay={0.15}>

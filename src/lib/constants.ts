@@ -12,7 +12,6 @@ export const HIDEABLE_PAGES = [
   { key: "about", label: "About", href: "/about" },
   { key: "programs", label: "Programs", href: "/programs" },
   { key: "testimonials", label: "Testimonials", href: "/testimonials" },
-  { key: "events", label: "Events", href: "/events" },
   { key: "tools", label: "Tools", href: "/tools" },
   { key: "blog", label: "Blog", href: "/blog" },
 ] as const;

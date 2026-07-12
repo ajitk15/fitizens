@@ -17,10 +17,8 @@ const nav: { label: string; href: string }[] = [
   { label: "FAQs", href: "/admin/faqs" },
   { label: "Socials", href: "/admin/socials" },
   { label: "Blog Posts", href: "/admin/posts" },
-  { label: "Events", href: "/admin/events" },
-  { label: "Registrations", href: "/admin/registrations" },
-  { label: "Orders", href: "/admin/orders" },
-  { label: "Leads", href: "/admin/leads" },
+  { label: "Newsletter", href: "/admin/newsletter" },
+  { label: "Enquiries", href: "/admin/leads" },
   { label: "Settings", href: "/admin/settings" },
   { label: "Audit Log", href: "/admin/audit" },
 ];
