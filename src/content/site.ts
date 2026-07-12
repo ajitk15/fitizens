@@ -159,6 +159,11 @@ export const trainer: Trainer = {
     "/images/image2.jpeg",
     "/images/image3.jpeg",
     "/images/image4.jpeg",
+    "/images/gallery-satya-1.jpg",
+    "/images/gallery-satya-2.jpg",
+    "/images/gallery-satya-3.jpg",
+    "/images/gallery-satya-4.jpg",
+    "/images/gallery-satya-5.jpg",
   ],
 };
 
@@ -206,16 +211,16 @@ export const programs: Program[] = [
     billingPeriod: "one-time",
     popular: false,
     displayOrder: 1,
-    image: "/images/image3.jpeg",
+    image: "/images/programs/transformation-12wk-card.jpg",
   },
   {
     slug: "24-weeks",
     title: "24 Weeks Package",
     durationLabel: "24 Weeks",
     shortDescription:
-      "Our most popular plan — six months of coaching for a complete, lasting transformation.",
+      "Our most popular plan — six months of personalized coaching designed to help you achieve a complete, lasting transformation.",
     fullDescription:
-      "Six full months of online coaching — the sweet spot for a complete body recomposition and habits that actually stick. Most clients see their best results here. " +
+      "The ideal coaching duration for most clients. Six months provides the time needed to achieve meaningful body composition, build sustainable habits, and create results that last. It's the option I recommend most often — and where the majority of clients see their best outcomes. " +
       ONLINE_NOTE,
     features: SHARED_FEATURES,
     goalTags: ["fat-loss", "muscle-gain", "recomp", "lifestyle"],
@@ -224,16 +229,16 @@ export const programs: Program[] = [
     billingPeriod: "one-time",
     popular: true,
     displayOrder: 2,
-    image: "/images/image2.jpeg",
+    image: "/images/programs/transformation-24wk-card.jpg",
   },
   {
     slug: "52-weeks",
     title: "52 Weeks Package",
     durationLabel: "52 Weeks",
     shortDescription:
-      "A full year of dedicated coaching for the most ambitious, life-changing goals.",
+      "A full year of dedicated coaching for the most ambitious, life-changing goals — ideal for those with significant weight to lose, individuals requiring long-term support, or anyone seeking a complete transformation.",
     fullDescription:
-      "A full year of dedicated online coaching for the most ambitious goals — total transformation, photoshoot-ready conditioning, or long-term management of a lifestyle disorder. " +
+      "A full year of dedicated online coaching designed for those with significant weight-loss goals, individuals requiring long-term support, or anyone committed to a complete transformation. This package is ideal for achieving substantial, sustainable weight loss, improving overall health, and building lifelong habits through personalized coaching and accountability. " +
       ONLINE_NOTE,
     features: SHARED_FEATURES,
     goalTags: ["fat-loss", "muscle-gain", "recomp", "lifestyle"],
@@ -242,7 +247,7 @@ export const programs: Program[] = [
     billingPeriod: "one-time",
     popular: false,
     displayOrder: 3,
-    image: "/images/image4.jpeg",
+    image: "/images/programs/transformation-52wk-card.jpg",
   },
 ];
 
@@ -299,38 +304,59 @@ export const transformations: Transformation[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Testimonials — PLACEHOLDER (await real client quotes + consent)    */
+/*  Testimonials — real client quotes with before/after collages.      */
+/*  Names withheld until the client supplies them (edit in /admin).    */
 /* ------------------------------------------------------------------ */
 export const testimonials: Testimonial[] = [
   {
     id: "q1",
-    clientName: "Placeholder Client",
+    clientName: "FITIZENS Client",
+    image: "/images/testimonials/transformation-26kg.jpg",
     quote:
-      "Coaching was simple to follow and the daily check-ins kept me accountable. Placeholder testimonial — replace with a real client quote.",
+      "Satya helped me achieve what I couldn't on my own — consistent progress. His personalized guidance, accountability, and unwavering support kept me motivated throughout my transformation. If you're serious about changing your physique and building lasting habits, I can't recommend him enough.",
     rating: 5,
-    result: "Lost 12 kg in 16 weeks",
+    result: "Lost 26 kg",
     featured: true,
-    placeholder: true,
   },
   {
     id: "q2",
-    clientName: "Placeholder Client",
+    clientName: "FITIZENS Client",
+    image: "/images/testimonials/transformation-11kg-13wk.jpg",
     quote:
-      "The plan was built around my blood work and actually fit my lifestyle. Placeholder testimonial — replace with a real client quote.",
+      "I found Satya through Instagram, and working with him has been one of the best decisions for my fitness journey. His personalized plans, regular check-ins, and consistent accountability kept me on track and motivated throughout. His knowledge, patience, and genuine commitment helped me build confidence and make real progress. I highly recommend Satya to anyone looking for a coach who truly cares about their long-term success.",
     rating: 5,
-    result: "Reversed pre-diabetic markers",
+    result: "Lost 11 kg in 13 weeks",
     featured: true,
-    placeholder: true,
   },
   {
     id: "q3",
-    clientName: "Placeholder Client",
+    clientName: "FITIZENS Client",
+    image: "/images/testimonials/transformation-13kg-24wk.jpg",
     quote:
-      "Got photoshoot-ready in time and learned how to maintain it. Placeholder testimonial — replace with a real client quote.",
+      "Over the past six months, Satya helped me lose 13 kg and completely transform my confidence. His personalized coaching, regular accountability, and timely adjustments to my training and nutrition made the journey sustainable and enjoyable. I've learned so much throughout the process, and it's incredibly rewarding to inspire others with my own transformation. I highly recommend Satya to anyone looking for lasting results and a coach who genuinely supports you every step of the way.",
     rating: 5,
-    result: "Gained 6 kg lean muscle",
+    result: "Lost 13 kg in 24 weeks",
     featured: true,
-    placeholder: true,
+  },
+  {
+    id: "q4",
+    clientName: "FITIZENS Client",
+    image: "/images/testimonials/transformation-27kg-36wk.jpg",
+    quote:
+      "With Satya's coaching, I went from 96 kg to 69 kg through a practical, sustainable approach to fitness. His deep knowledge, personalized guidance, and ability to make complex concepts easy to understand kept me motivated every step of the way. If you're looking for a coach who genuinely cares about your long-term success, he's the right choice.",
+    rating: 5,
+    result: "96 kg → 69 kg in 36 weeks",
+    featured: true,
+  },
+  {
+    id: "q5",
+    clientName: "FITIZENS Client",
+    image: "/images/testimonials/transformation-16kg-18wk.jpg",
+    quote:
+      "Working with Satya has been truly transformative. Beyond personalized nutrition and training, he helped me build sustainable habits, understand my body, and make better long-term decisions. His regular check-ins, thoughtful plan adjustments, and constant guidance made the journey achievable and led to noticeable, lasting changes. I highly recommend him to anyone looking for real, sustainable results.",
+    rating: 5,
+    result: "Lost 16 kg in 18 weeks",
+    featured: true,
   },
 ];
 
@@ -412,6 +438,9 @@ export const site = {
   whatsappLink: `https://wa.me/${trainer.whatsapp}`,
   /** Label used by every call-booking button — editable in /admin/settings. */
   ctaLabel: "Book a Consultation",
+  /** Home-page headlines — *word* renders in the accent colour; editable in /admin/settings. */
+  heroHeadline: "Build Better *Health* — Inside and Out.",
+  aboutHeading: "Coaching that's personalized, *science-based* & sustainable.",
   /** Page keys hidden from nav/sitemap — editable in /admin/settings. */
   hiddenPages: [] as string[],
   /** First-visit popup on the home page — editable in /admin/settings. */

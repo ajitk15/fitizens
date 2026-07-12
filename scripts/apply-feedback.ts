@@ -25,13 +25,42 @@ db.prepare(
   defaults.trainer.certificateImage ?? null,
 );
 
-// Programs — full descriptions + the shared "what's included" features
+// Programs — short + full descriptions, card image and the shared features
 const updProgram = db.prepare(
-  `UPDATE programs SET full_description = ?, features_json = ? WHERE slug = ?`,
+  `UPDATE programs SET short_description = ?, full_description = ?, image = ?, features_json = ? WHERE slug = ?`,
 );
 for (const p of defaults.programs) {
-  updProgram.run(p.fullDescription, JSON.stringify(p.features), p.slug);
+  updProgram.run(p.shortDescription, p.fullDescription, p.image, JSON.stringify(p.features), p.slug);
 }
+
+// Trainer gallery — append the new photos the client supplied (keeps admin edits)
+{
+  const row = db.prepare(`SELECT gallery_images_json AS g FROM trainer WHERE id = 1`).get() as
+    | { g: string }
+    | undefined;
+  if (row) {
+    const gallery: string[] = JSON.parse(row.g || "[]");
+    const added = defaults.trainer.galleryImages.filter((img) => !gallery.includes(img));
+    if (added.length) {
+      db.prepare(`UPDATE trainer SET gallery_images_json = ? WHERE id = 1`).run(
+        JSON.stringify([...gallery, ...added]),
+      );
+      console.info(`[apply-feedback] trainer gallery: added ${added.length} photo(s).`);
+    }
+  }
+}
+
+// Testimonials — drop the placeholder rows, insert the real client quotes once
+db.prepare(`DELETE FROM testimonials WHERE placeholder = 1`).run();
+const insTestimonial = db.prepare(
+  `INSERT INTO testimonials (client_name, image, quote, rating, result, featured, placeholder, display_order)
+   VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+);
+const hasQuote = db.prepare(`SELECT 1 FROM testimonials WHERE quote = ?`);
+defaults.testimonials.forEach((x, i) => {
+  if (hasQuote.get(x.quote)) return;
+  insTestimonial.run(x.clientName, x.image ?? null, x.quote, x.rating, x.result ?? null, x.featured ? 1 : 0, i);
+});
 
 // Consultation note
 db.prepare(`UPDATE consultation SET note = ? WHERE id = 1`).run(

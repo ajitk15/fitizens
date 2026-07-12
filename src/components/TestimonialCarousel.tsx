@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { Testimonial } from "@/content/site";
@@ -29,7 +30,7 @@ export function TestimonialCarousel({
   const t = testimonials[index];
 
   return (
-    <div className="relative mx-auto max-w-3xl">
+    <div className="relative mx-auto max-w-4xl">
       <div className="relative overflow-hidden rounded-2xl border border-line bg-ink-card p-8 sm:p-12">
         <svg
           className="absolute right-6 top-6 text-line"
@@ -43,27 +44,41 @@ export function TestimonialCarousel({
         </svg>
 
         <AnimatePresence mode="wait">
-          <motion.blockquote
+          <motion.div
             key={t.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.4 }}
+            className={t.image ? "grid items-center gap-8 md:grid-cols-[minmax(0,300px)_1fr]" : undefined}
           >
-            <StarRating rating={t.rating} className="mb-4" />
-            <p className="text-lg leading-relaxed text-fg sm:text-xl">
-              “{t.quote}”
-            </p>
-            <footer className="mt-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/15 font-display text-lg text-accent">
-                {t.clientName.charAt(0)}
+            {t.image && (
+              <div className="relative mx-auto aspect-[3/4] w-full max-w-[300px] overflow-hidden rounded-xl border border-line bg-ink">
+                <Image
+                  src={t.image}
+                  alt={t.result ? `${t.clientName} — ${t.result}` : t.clientName}
+                  fill
+                  sizes="(max-width: 768px) 80vw, 300px"
+                  className="object-contain"
+                />
               </div>
-              <div>
-                <p className="font-semibold text-fg">{t.clientName}</p>
-                {t.result && <p className="text-sm text-accent">{t.result}</p>}
-              </div>
-            </footer>
-          </motion.blockquote>
+            )}
+            <blockquote>
+              <StarRating rating={t.rating} className="mb-4" />
+              <p className="text-lg leading-relaxed text-fg sm:text-xl">
+                “{t.quote}”
+              </p>
+              <footer className="mt-6 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/15 font-display text-lg text-accent">
+                  {t.clientName.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-fg">{t.clientName}</p>
+                  {t.result && <p className="text-sm text-accent">{t.result}</p>}
+                </div>
+              </footer>
+            </blockquote>
+          </motion.div>
         </AnimatePresence>
       </div>
 

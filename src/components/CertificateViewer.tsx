@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+
+/** Never fires — used with useSyncExternalStore purely for SSR/client detection. */
+const emptySubscribe = () => () => {};
 
 interface CertificateViewerProps {
   src: string;
@@ -20,10 +23,8 @@ interface CertificateViewerProps {
 export function CertificateViewer({ src, alt, ratio = "3/2", caption }: CertificateViewerProps) {
   const [open, setOpen] = useState(false);
   // Portal target — only available after mount (avoids SSR document access).
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const close = useCallback(() => setOpen(false), []);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;

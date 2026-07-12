@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { AccentText } from "@/components/AccentText";
 import { Hero } from "@/components/Hero";
 import { StatsBar } from "@/components/StatsBar";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -77,7 +78,7 @@ export default async function HomePage() {
           <div className="order-1 lg:order-2">
             <SectionHeading
               eyebrow="About Me"
-              title={<>Coaching that&apos;s simple, <span className="text-accent">science-led</span> & yours alone</>}
+              title={<AccentText text={site.aboutHeading} />}
               subtitle={trainer.bio[1]}
             />
             <Reveal delay={0.1} className="mt-6">

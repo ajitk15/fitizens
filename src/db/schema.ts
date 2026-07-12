@@ -126,6 +126,11 @@ export const siteSettings = sqliteTable("site_settings", {
   keywordsJson: text("keywords_json").notNull().default("[]"), // string[]
   /** Label used by every call-booking button across the site. */
   ctaLabel: text("cta_label").notNull().default("Book a Consultation"),
+  /** Home-page headlines — *word* renders in the accent colour. */
+  heroHeadline: text("hero_headline").notNull().default("Build Better *Health* — Inside and Out."),
+  aboutHeading: text("about_heading")
+    .notNull()
+    .default("Coaching that's personalized, *science-based* & sustainable."),
   /** First-visit popup on the home page. */
   popupEnabled: integer("popup_enabled", { mode: "boolean" }).notNull().default(true),
   popupTitle: text("popup_title").notNull().default("Your transformation starts with a call"),

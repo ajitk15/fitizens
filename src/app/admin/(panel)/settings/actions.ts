@@ -44,6 +44,10 @@ export async function saveSettingsAction(formData: FormData) {
           siteUrl: normalizeSiteUrl(str(formData, "siteUrl")),
           keywordsJson: lines(formData, "keywords"),
           ctaLabel: str(formData, "ctaLabel") || "Book a Consultation",
+          heroHeadline: str(formData, "heroHeadline") || "Build Better *Health* — Inside and Out.",
+          aboutHeading:
+            str(formData, "aboutHeading") ||
+            "Coaching that's personalized, *science-based* & sustainable.",
           popupEnabled: formData.get("popupEnabled") != null,
           popupTitle: str(formData, "popupTitle"),
           popupBody: str(formData, "popupBody"),

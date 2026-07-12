@@ -1,11 +1,12 @@
 import Image from "next/image";
+import { AccentText } from "./AccentText";
 import { ButtonLink } from "./Button";
 import { Reveal } from "./Reveal";
 import { StarRating } from "./StarRating";
-import { getTrainer } from "@/lib/content";
+import { getTrainer, getSite } from "@/lib/content";
 
 export async function Hero() {
-  const trainer = await getTrainer();
+  const [trainer, site] = await Promise.all([getTrainer(), getSite()]);
   return (
     <section className="relative overflow-hidden pt-16">
       {/* ---------------------------------------------------------------- */}
@@ -44,12 +45,8 @@ export async function Hero() {
             </span>
           </Reveal>
           <Reveal delay={0.08}>
-            <h1 className="mt-6 font-display text-5xl uppercase leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-              Transform your
-              <br />
-              <span className="text-accent">body &amp; health</span>
-              <br />
-              online.
+            <h1 className="mt-6 max-w-xl font-display text-5xl uppercase leading-[0.95] text-white sm:text-6xl lg:text-7xl">
+              <AccentText text={site.heroHeadline} />
             </h1>
           </Reveal>
           <Reveal delay={0.16}>

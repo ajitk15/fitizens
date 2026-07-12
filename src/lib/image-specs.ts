@@ -16,7 +16,11 @@ export const IMAGE_SPECS = {
   gallery: { maxW: 900, maxH: 1200, label: "Best: 900×1200 (3:4 portrait)" },
   program: { maxW: 1600, maxH: 1200, label: "Best: 1600×1200 (4:3)" },
   transformation: { maxW: 1000, maxH: 1250, label: "Best: 1000×1250 (4:5 portrait)" },
-  testimonial: { maxW: 400, maxH: 400, label: "Best: 400×400 (square)" },
+  testimonial: {
+    maxW: 900,
+    maxH: 1200,
+    label: "Best: 900×1200 (3:4 portrait) — client photo or before/after collage",
+  },
   post: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
   event: { maxW: 1600, maxH: 900, label: "Best: 1600×900 (16:9)" },
 } as const satisfies Record<string, ImageSpec>;

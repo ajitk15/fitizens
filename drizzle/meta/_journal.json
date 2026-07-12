@@ -36,6 +36,13 @@
       "when": 1783186878829,
       "tag": "0004_certificate-image",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1783837928006,
+      "tag": "0005_hero-about-headlines",
+      "breakpoints": true
     }
   ]
 }

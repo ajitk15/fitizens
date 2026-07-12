@@ -45,6 +45,23 @@ export default async function SettingsAdminPage({
           </div>
         </AdminCard>
 
+        <AdminCard title="Home-page headlines">
+          <div className="space-y-4">
+            <Field
+              label="Hero headline"
+              hint="Wrap words in *asterisks* to highlight them in the accent colour."
+            >
+              <Input name="heroHeadline" defaultValue={site.heroHeadline} />
+            </Field>
+            <Field
+              label="About-section heading"
+              hint="Shown above the bio on the home page. *Asterisks* highlight words."
+            >
+              <Input name="aboutHeading" defaultValue={site.aboutHeading} />
+            </Field>
+          </div>
+        </AdminCard>
+
         <AdminCard title="Pages">
           <p className="mb-3 text-xs text-muted/70">
             Unchecked pages disappear from the menu and their links stop working. Home and
