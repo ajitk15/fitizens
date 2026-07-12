@@ -6,14 +6,12 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { ButtonLink } from "@/components/Button";
 import { ProgramCard } from "@/components/ProgramCard";
-import { TransformationsGallery } from "@/components/TransformationsGallery";
 import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { FaqJsonLd } from "@/components/FaqJsonLd";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import {
   getPrograms,
-  getTransformations,
   getTestimonials,
   getFaqs,
   getTrainer,
@@ -47,10 +45,9 @@ const steps = [
 
 export const dynamic = "force-dynamic";
 export default async function HomePage() {
-  const [programs, transformations, testimonials, faqs, trainer, consultation, site] =
+  const [programs, testimonials, faqs, trainer, consultation, site] =
     await Promise.all([
       getPrograms(),
-      getTransformations(),
       getTestimonials(),
       getFaqs(),
       getTrainer(),
@@ -142,34 +139,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Transformations */}
+      {/* Transformations & testimonials — one section, one source of truth */}
       <section id="transformations" className="border-t border-line bg-ink-soft">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <SectionHeading
+            align="center"
             eyebrow="Transformations"
-            title="Real results, drag to compare"
-            subtitle="Slide the handle to see the difference. (Sample images shown — real consented client transformations coming soon.)"
+            title="Real results, real words"
+            className="mb-12"
           />
-          <div className="mt-12">
-            <TransformationsGallery items={transformations.filter((t) => t.featured)} />
-          </div>
+          <TestimonialCarousel testimonials={testimonials.filter((t) => t.featured)} />
           <Reveal className="mt-10 text-center">
             <ButtonLink href="/transformations" variant="secondary">
               View all transformations
             </ButtonLink>
           </Reveal>
         </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <SectionHeading
-          align="center"
-          eyebrow="Testimonials"
-          title="What clients say"
-          className="mb-12"
-        />
-        <TestimonialCarousel testimonials={testimonials.filter((t) => t.featured)} />
       </section>
 
       {/* FAQ */}

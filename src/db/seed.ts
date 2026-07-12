@@ -75,7 +75,7 @@ export function ensureSeeded(db: Db): void {
       .run();
   }
 
-  if (empty(t.transformations)) {
+  if (defaults.transformations.length && empty(t.transformations)) {
     db.insert(t.transformations)
       .values(
         defaults.transformations.map((x, i) => ({

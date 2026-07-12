@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ButtonLink } from "@/components/Button";
 import { Reveal } from "@/components/Reveal";
+import { TransformationCollages } from "@/components/TransformationCollages";
 import { TransformationsGallery } from "@/components/TransformationsGallery";
-import { getTransformations } from "@/lib/content";
+import { getTestimonials, getTransformations } from "@/lib/content";
 import { assertPageVisible } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "Transformations",
   description:
-    "Real client transformations coached online by FITIZENS — fat loss, muscle gain and body recomposition. Drag to compare before and after.",
+    "Real client transformations coached online by FITIZENS — fat loss, muscle gain and body recomposition, in the clients' own words.",
   alternates: { canonical: "/transformations" },
 };
 
@@ -17,7 +18,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export default async function TransformationsPage() {
   await assertPageVisible("transformations");
-  const transformations = await getTransformations();
+  const [testimonials, transformations] = await Promise.all([
+    getTestimonials(),
+    getTransformations(),
+  ]);
+  // Drag-to-compare pairs added via the admin Transformations panel; the
+  // placeholder samples are gone, so this is empty until real pairs exist.
+  const comparePairs = transformations.filter((t) => !t.placeholder);
+
   return (
     <>
       <section className="relative overflow-hidden pt-28">
@@ -27,13 +35,24 @@ export default async function TransformationsPage() {
             align="center"
             eyebrow="Transformations"
             title="The proof is in the progress"
-            subtitle="Filter by goal and drag the slider to compare. Sample images are shown for now — real, consented client transformations will appear here."
+            subtitle="Real clients, real results — coached fully online, in their own words."
           />
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <TransformationsGallery items={transformations} />
+        <TransformationCollages testimonials={testimonials} />
+
+        {comparePairs.length > 0 && (
+          <div className="mt-16">
+            <SectionHeading
+              eyebrow="Before / After"
+              title="Drag to compare"
+              className="mb-8"
+            />
+            <TransformationsGallery items={comparePairs} />
+          </div>
+        )}
 
         <Reveal className="mt-16 rounded-2xl border border-accent/40 bg-ink-card p-8 text-center shadow-glow">
           <h2 className="font-display text-2xl uppercase sm:text-3xl">

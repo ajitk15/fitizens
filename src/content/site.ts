@@ -262,46 +262,11 @@ export const consultation = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Transformations — PLACEHOLDER pairs (await consented real photos)  */
+/*  Transformations — drag-to-compare before/after pairs. Client       */
+/*  results currently live as collages on testimonials; separate       */
+/*  before/after photos are added via /admin/transformations.          */
 /* ------------------------------------------------------------------ */
-export const transformations: Transformation[] = [
-  {
-    id: "t1",
-    clientName: "Client A",
-    beforeImage: "/images/image3.jpeg",
-    afterImage: "/images/image2.jpeg",
-    goal: "fat-loss",
-    durationWeeks: 16,
-    summary: "Sample before/after — replace with a real, consented transformation.",
-    consentGiven: false,
-    featured: true,
-    placeholder: true,
-  },
-  {
-    id: "t2",
-    clientName: "Client B",
-    beforeImage: "/images/image4.jpeg",
-    afterImage: "/images/image1.jpeg",
-    goal: "muscle-gain",
-    durationWeeks: 24,
-    summary: "Sample before/after — replace with a real, consented transformation.",
-    consentGiven: false,
-    featured: true,
-    placeholder: true,
-  },
-  {
-    id: "t3",
-    clientName: "Client C",
-    beforeImage: "/images/image1.jpeg",
-    afterImage: "/images/image4.jpeg",
-    goal: "recomp",
-    durationWeeks: 20,
-    summary: "Sample before/after — replace with a real, consented transformation.",
-    consentGiven: false,
-    featured: false,
-    placeholder: true,
-  },
-];
+export const transformations: Transformation[] = [];
 
 /* ------------------------------------------------------------------ */
 /*  Testimonials — real client quotes with before/after collages.      */
