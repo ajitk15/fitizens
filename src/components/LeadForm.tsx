@@ -57,12 +57,44 @@ export function LeadForm() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  // Step 1 needs a goal; step 2 needs name + a valid-ish whatsapp number.
+  // Step 1 needs a goal; step 2 needs name + a valid-ish whatsapp number and
+  // a well-formed email when one is given.
+  const emailOk = form.email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const canContinue =
-    step === 0 ? form.goal !== "" : step === 1 ? form.name.trim().length > 1 && form.whatsapp.replace(/\D/g, "").length >= 10 : true;
+    step === 0
+      ? form.goal !== ""
+      : step === 1
+        ? form.name.trim().length > 1 && form.whatsapp.replace(/\D/g, "").length >= 10 && emailOk
+        : true;
+  // Tell the user why the button is disabled instead of leaving them guessing.
+  const continueHint =
+    step === 0 && form.goal === ""
+      ? "Pick a goal to continue."
+      : step === 1 && !canContinue
+        ? form.name.trim().length <= 1
+          ? "Please enter your name."
+          : form.whatsapp.replace(/\D/g, "").length < 10
+            ? "Please enter a 10-digit WhatsApp number."
+            : "That email doesn't look right."
+        : "";
+
+  function advance() {
+    if (canContinue && step < 2) setStep((s) => s + 1);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Enter on an earlier step advances instead of submitting half a form.
+    if (step < 2) {
+      advance();
+      return;
+    }
+    // Opted into the newsletter → we need somewhere to send it.
+    if (form.subscribe && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setStatus("error");
+      setError("Add a valid email for the newsletter, or untick the newsletter box.");
+      return;
+    }
     setStatus("submitting");
     setError("");
     try {
@@ -92,8 +124,7 @@ export function LeadForm() {
         </div>
         <h3 className="mt-4 font-display text-2xl uppercase">Request received!</h3>
         <p className="mt-2 text-muted">
-          Thanks {form.name.split(" ")[0]} — I&apos;ll reach out on WhatsApp
-          shortly to confirm your consultation.
+          {`Thanks ${form.name.split(" ")[0]} — I'll reach out on WhatsApp shortly to confirm your consultation.`}
           {form.subscribe && form.email && " You're also on the newsletter list — welcome!"}
         </p>
       </div>
@@ -219,23 +250,37 @@ export function LeadForm() {
                   placeholder="Tell me a little about where you're starting from…"
                 />
               </Field>
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
-                <input
-                  type="checkbox"
-                  checked={form.subscribe}
-                  onChange={(e) => update({ subscribe: e.target.checked })}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent,#ff5722)]"
-                />
-                <span className="text-sm text-muted">
-                  Send me the FITIZENS newsletter — fitness tips and updates. Unsubscribe
-                  anytime with one click.
-                  {!form.email && form.subscribe && (
-                    <span className="mt-1 block text-xs text-accent">
-                      Add your email above so we know where to send it.
-                    </span>
-                  )}
-                </span>
-              </label>
+              <div className="rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={form.subscribe}
+                    onChange={(e) => update({ subscribe: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent,#ff5722)]"
+                  />
+                  <span className="text-sm text-muted">
+                    Send me the FITIZENS newsletter — fitness tips and updates. Unsubscribe
+                    anytime with one click.
+                  </span>
+                </label>
+                {form.subscribe && (
+                  <div className="mt-3 pl-7">
+                    <label className="block">
+                      <span className="mb-1 block text-xs text-muted">
+                        {form.email ? "Sending to" : "Where should we send it?"}
+                      </span>
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => update({ email: e.target.value })}
+                        className={inputCls}
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
             </fieldset>
           )}
         </motion.div>
@@ -261,27 +306,29 @@ export function LeadForm() {
 
       <div className="mt-6 flex items-center justify-between gap-3">
         {step > 0 ? (
-          <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>
+          <Button key="back" type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>
             ← Back
           </Button>
         ) : (
           <span />
         )}
 
+        {/* Distinct keys keep Continue and Submit as separate DOM nodes — reusing
+            one node lets the browser fire the click's default action against the
+            swapped-in submit button and submit the form a step early. */}
         {step < 2 ? (
-          <Button
-            type="button"
-            onClick={() => canContinue && setStep((s) => s + 1)}
-            disabled={!canContinue}
-          >
+          <Button key="continue" type="button" onClick={advance} disabled={!canContinue}>
             Continue →
           </Button>
         ) : (
-          <Button type="submit" disabled={status === "submitting"}>
+          <Button key="submit" type="submit" disabled={status === "submitting"}>
             {status === "submitting" ? "Sending…" : "Submit Request"}
           </Button>
         )}
       </div>
+      {continueHint && (
+        <p className="mt-3 text-right text-xs text-muted/70">{continueHint}</p>
+      )}
     </form>
   );
 }
