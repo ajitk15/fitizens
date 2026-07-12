@@ -43,6 +43,13 @@
       "when": 1783837928006,
       "tag": "0005_hero-about-headlines",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1783855213351,
+      "tag": "0006_drop-transformations",
+      "breakpoints": true
     }
   ]
 }

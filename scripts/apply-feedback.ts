@@ -50,10 +50,6 @@ for (const p of defaults.programs) {
   }
 }
 
-// Transformations — remove the sample before/after pairs; real client results
-// are shown from testimonial collages until consented photo pairs exist.
-db.prepare(`DELETE FROM transformations WHERE placeholder = 1`).run();
-
 // Testimonials — drop the placeholder rows, insert the real client quotes once
 db.prepare(`DELETE FROM testimonials WHERE placeholder = 1`).run();
 const insTestimonial = db.prepare(

@@ -52,20 +52,6 @@ export interface Program {
   image: string;
 }
 
-export interface Transformation {
-  id: string;
-  clientName: string;
-  beforeImage: string;
-  afterImage: string;
-  goal: Goal;
-  durationWeeks: number;
-  summary: string;
-  consentGiven: boolean;
-  featured: boolean;
-  /** Placeholder pairs until the client supplies consented real photos. */
-  placeholder?: boolean;
-}
-
 export interface Testimonial {
   id: string;
   clientName: string;
@@ -262,13 +248,6 @@ export const consultation = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Transformations — drag-to-compare before/after pairs. Client       */
-/*  results currently live as collages on testimonials; separate       */
-/*  before/after photos are added via /admin/transformations.          */
-/* ------------------------------------------------------------------ */
-export const transformations: Transformation[] = [];
-
-/* ------------------------------------------------------------------ */
 /*  Testimonials — real client quotes with before/after collages.      */
 /*  Names withheld until the client supplies them (edit in /admin).    */
 /* ------------------------------------------------------------------ */
@@ -422,7 +401,6 @@ export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
-  { label: "Transformations", href: "/transformations" },
   { label: "Events", href: "/events" },
   { label: "Tools", href: "/tools" },
   { label: "Blog", href: "/blog" },

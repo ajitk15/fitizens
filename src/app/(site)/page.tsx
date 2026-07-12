@@ -139,21 +139,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Transformations & testimonials — one section, one source of truth */}
-      <section id="transformations" className="border-t border-line bg-ink-soft">
+      {/* Testimonials — client results in their own words */}
+      <section id="testimonials" className="border-t border-line bg-ink-soft">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <SectionHeading
             align="center"
-            eyebrow="Transformations"
+            eyebrow="Testimonials"
             title="Real results, real words"
             className="mb-12"
           />
           <TestimonialCarousel testimonials={testimonials.filter((t) => t.featured)} />
-          <Reveal className="mt-10 text-center">
-            <ButtonLink href="/transformations" variant="secondary">
-              View all transformations
-            </ButtonLink>
-          </Reveal>
         </div>
       </section>
 

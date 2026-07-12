@@ -51,20 +51,6 @@ export const programs = sqliteTable("programs", {
   image: text("image").notNull(),
 });
 
-export const transformations = sqliteTable("transformations", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  clientName: text("client_name").notNull(),
-  beforeImage: text("before_image").notNull(),
-  afterImage: text("after_image").notNull(),
-  goal: text("goal").notNull(),
-  durationWeeks: integer("duration_weeks").notNull(),
-  summary: text("summary").notNull(),
-  consentGiven: integer("consent_given", { mode: "boolean" }).notNull().default(false),
-  featured: integer("featured", { mode: "boolean" }).notNull().default(false),
-  placeholder: integer("placeholder", { mode: "boolean" }).notNull().default(false),
-  displayOrder: integer("display_order").notNull().default(0),
-});
-
 export const testimonials = sqliteTable("testimonials", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   clientName: text("client_name").notNull(),

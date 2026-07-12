@@ -15,7 +15,6 @@ export const IMAGE_SPECS = {
   profile: { maxW: 1080, maxH: 1440, label: "Best: 1080×1440 (3:4 portrait)" },
   gallery: { maxW: 900, maxH: 1200, label: "Best: 900×1200 (3:4 portrait)" },
   program: { maxW: 1600, maxH: 1200, label: "Best: 1600×1200 (4:3)" },
-  transformation: { maxW: 1000, maxH: 1250, label: "Best: 1000×1250 (4:5 portrait)" },
   testimonial: {
     maxW: 900,
     maxH: 1200,

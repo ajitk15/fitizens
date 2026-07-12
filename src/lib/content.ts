@@ -7,7 +7,6 @@ import type {
   Stat,
   Program,
   Goal,
-  Transformation,
   Testimonial,
   Faq,
   SocialLink,
@@ -106,29 +105,6 @@ export const getProgram = cache(async (slug: string): Promise<Program | undefine
   const programs = await getPrograms();
   return programs.find((p) => p.slug === slug);
 });
-
-export const getTransformations = cache(async (): Promise<Transformation[]> =>
-  safe(() => {
-    const rows = getDb()
-      .select()
-      .from(t.transformations)
-      .orderBy(asc(t.transformations.displayOrder))
-      .all();
-    if (!rows.length) return fallback.transformations;
-    return rows.map((r) => ({
-      id: String(r.id),
-      clientName: r.clientName,
-      beforeImage: r.beforeImage,
-      afterImage: r.afterImage,
-      goal: r.goal as Goal,
-      durationWeeks: r.durationWeeks,
-      summary: r.summary,
-      consentGiven: r.consentGiven,
-      featured: r.featured,
-      placeholder: r.placeholder || undefined,
-    }));
-  }, fallback.transformations),
-);
 
 export const getTestimonials = cache(async (): Promise<Testimonial[]> =>
   safe(() => {

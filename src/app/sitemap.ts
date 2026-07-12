@@ -14,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const hiddenHrefs = new Set<string>(
     HIDEABLE_PAGES.filter((p) => hidden(p.key)).map((p) => p.href),
   );
-  const routes = ["", "/about", "/programs", "/transformations", "/events", "/tools", "/blog", "/contact"].filter(
+  const routes = ["", "/about", "/programs", "/events", "/tools", "/blog", "/contact"].filter(
     (r) => !hiddenHrefs.has(r),
   );
 

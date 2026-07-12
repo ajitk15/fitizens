@@ -13,7 +13,6 @@ const nav: { label: string; href: string }[] = [
   { label: "Dashboard", href: "/admin" },
   { label: "Trainer", href: "/admin/trainer" },
   { label: "Programs", href: "/admin/programs" },
-  { label: "Transformations", href: "/admin/transformations" },
   { label: "Testimonials", href: "/admin/testimonials" },
   { label: "FAQs", href: "/admin/faqs" },
   { label: "Socials", href: "/admin/socials" },

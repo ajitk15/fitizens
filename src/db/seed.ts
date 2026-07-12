@@ -75,25 +75,6 @@ export function ensureSeeded(db: Db): void {
       .run();
   }
 
-  if (defaults.transformations.length && empty(t.transformations)) {
-    db.insert(t.transformations)
-      .values(
-        defaults.transformations.map((x, i) => ({
-          clientName: x.clientName,
-          beforeImage: x.beforeImage,
-          afterImage: x.afterImage,
-          goal: x.goal,
-          durationWeeks: x.durationWeeks,
-          summary: x.summary,
-          consentGiven: x.consentGiven,
-          featured: x.featured,
-          placeholder: x.placeholder ?? false,
-          displayOrder: i,
-        })),
-      )
-      .run();
-  }
-
   if (empty(t.testimonials)) {
     db.insert(t.testimonials)
       .values(
