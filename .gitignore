@@ -34,8 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
-# runtime data (SQLite DB + uploads) — lives on a volume in production
-#/data
+# runtime data (SQLite DB + uploads) — lives on a volume in production.
+# Never commit the DB: Render reads it from the mounted volume (DATA_DIR=/data),
+# not the repo, and the -wal/-shm files are transient. Sync content via /admin/sync.
+/data
 
 # vercel
 .vercel

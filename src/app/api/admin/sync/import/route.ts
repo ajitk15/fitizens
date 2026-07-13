@@ -47,8 +47,9 @@ export async function POST(req: Request) {
   const db = getDb();
 
   // Wrap in a transaction so a failure mid-import doesn't leave data half-replaced.
-  const sqliteDb = (db as unknown as { $client: Database }).
-    $client as Database;
+  // `better-sqlite3`'s default export is a namespace/constructor; the instance
+  // type is `Database.Database`.
+  const sqliteDb = (db as unknown as { $client: Database.Database }).$client;
   sqliteDb.transaction(() => {
     // Process singletons — delete where id=1, then insert
     for (const key of SINGLETON_TABLES) {
