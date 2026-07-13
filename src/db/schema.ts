@@ -141,6 +141,8 @@ export const siteSettings = sqliteTable("site_settings", {
   hiddenPagesJson: text("hidden_pages_json").notNull().default("[]"),
   /** Public Calendly scheduling link — embedded on /contact, used by booking CTAs. */
   calendlyUrl: text("calendly_url"),
+  /** Admin toggle: allow skipping payment for testing (even on the deployed site). */
+  testPaymentEnabled: integer("test_payment_enabled", { mode: "boolean" }).notNull().default(false),
 });
 
 /* ------------------------------------------------------------------ */

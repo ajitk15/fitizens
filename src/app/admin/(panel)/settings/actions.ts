@@ -73,6 +73,7 @@ export async function saveSettingsAction(formData: FormData) {
           hiddenPagesJson: JSON.stringify(
             HIDEABLE_PAGES.filter((p) => formData.get(`page_${p.key}`) == null).map((p) => p.key),
           ),
+          testPaymentEnabled: formData.get("testPaymentEnabled") != null,
         })
         .where(eq(t.siteSettings.id, 1))
         .run();

@@ -155,6 +155,17 @@ export default async function SettingsAdminPage({
               <Textarea name="note" defaultValue={consultation.note} />
             </Field>
           </div>
+          <div className="mt-4 rounded-xl border border-warn/40 bg-warn/10 p-4">
+            <Checkbox
+              name="testPaymentEnabled"
+              label="Enable test payment mode (skip payment step)"
+              defaultChecked={settings?.testPaymentEnabled ?? false}
+            />
+            <p className="mt-1 text-xs text-warn/80">
+              When on, visitors can skip the payment step and proceed directly to booking.
+              Use for testing only — turn off before going live.
+            </p>
+          </div>
         </AdminCard>
 
         <SubmitButton>Save settings</SubmitButton>

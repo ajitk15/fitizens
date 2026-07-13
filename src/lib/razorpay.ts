@@ -12,12 +12,18 @@ export function razorpayConfigured(): boolean {
 }
 
 /**
- * Whether the payment step may be skipped for testing. Only when no real
- * payment provider is configured AND we're not in production (or an explicit
- * opt-in env is set). Impossible on the deployed site; auto-disables the
- * moment real Razorpay keys are added.
+ * Whether the payment step may be skipped for testing.
+ *
+ * Allowed when:
+ *  1. Razorpay keys are NOT configured AND (dev mode OR ALLOW_PAYMENT_BYPASS env), OR
+ *  2. The admin explicitly enabled "Test payment mode" in /admin/settings
+ *     (passed as `adminToggle`).
+ *
+ * Option 2 lets the trainer toggle test mode on the live site from the admin
+ * panel without touching env vars.
  */
-export function paymentBypassAllowed(): boolean {
+export function paymentBypassAllowed(adminToggle?: boolean): boolean {
+  if (adminToggle) return true;
   return (
     !razorpayConfigured() &&
     (process.env.NODE_ENV !== "production" || process.env.ALLOW_PAYMENT_BYPASS === "true")

@@ -229,6 +229,17 @@ export const getSite = cache(async (): Promise<typeof fallback.site> => {
   };
 });
 
+/**
+ * Whether the admin has enabled "test payment mode" in /admin/settings.
+ * Read directly (not cached) so changes take effect immediately.
+ */
+export function getTestPaymentEnabled(): boolean {
+  return safe(() => {
+    const row = getDb().select().from(t.siteSettings).where(eq(t.siteSettings.id, 1)).get();
+    return row?.testPaymentEnabled ?? false;
+  }, false);
+}
+
 /* ------------------------------------------------------------------ */
 /*  Blog — DB-only; empty until posts exist.                           */
 /* ------------------------------------------------------------------ */

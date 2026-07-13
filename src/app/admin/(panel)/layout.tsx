@@ -19,6 +19,7 @@ const nav: { label: string; href: string }[] = [
   { label: "Blog Posts", href: "/admin/posts" },
   { label: "Newsletter", href: "/admin/newsletter" },
   { label: "Bookings", href: "/admin/leads" },
+  { label: "Data Sync", href: "/admin/sync" },
   { label: "Settings", href: "/admin/settings" },
   { label: "Audit Log", href: "/admin/audit" },
 ];

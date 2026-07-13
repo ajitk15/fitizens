@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
-import { getConsultation } from "@/lib/content";
+import { getConsultation, getTestPaymentEnabled } from "@/lib/content";
 import { paymentBypassAllowed } from "@/lib/razorpay";
 
 /**
@@ -11,7 +11,7 @@ import { paymentBypassAllowed } from "@/lib/razorpay";
  * unless `paymentBypassAllowed()` (never in production with keys set).
  */
 export async function POST(request: Request) {
-  if (!paymentBypassAllowed()) {
+  if (!paymentBypassAllowed(getTestPaymentEnabled())) {
     return NextResponse.json({ error: "Not available." }, { status: 403 });
   }
 

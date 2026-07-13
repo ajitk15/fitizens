@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
-import { getConsultation } from "@/lib/content";
+import { getConsultation, getTestPaymentEnabled } from "@/lib/content";
 import {
   razorpayConfigured,
   razorpayKeyId,
@@ -17,7 +17,8 @@ import {
  */
 export async function POST(request: Request) {
   if (!razorpayConfigured()) {
-    return NextResponse.json({ configured: false, bypassAllowed: paymentBypassAllowed() });
+    const adminToggle = getTestPaymentEnabled();
+    return NextResponse.json({ configured: false, bypassAllowed: paymentBypassAllowed(adminToggle) });
   }
 
   let body: { bookingId?: number };
