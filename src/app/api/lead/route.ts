@@ -42,24 +42,26 @@ export async function POST(request: Request) {
   const name = (body.name || "").trim();
   const whatsapp = (body.whatsapp || "").replace(/\s+/g, "");
   const digits = whatsapp.replace(/\D/g, "");
+  const email = (body.email || "").trim();
 
   if (name.length < 2) {
     return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
   }
-  if (digits.length < 10) {
+  // International format required: +<country code><number>, 11–15 digits total.
+  if (!whatsapp.startsWith("+") || digits.length < 11 || digits.length > 15) {
     return NextResponse.json(
-      { error: "Please enter a valid WhatsApp number." },
+      { error: "Please enter your WhatsApp number with country code, e.g. +91 98765 43210." },
       { status: 400 },
     );
   }
-  if (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
   }
 
   const lead = {
     name,
     whatsapp,
-    email: body.email?.trim() || "—",
+    email,
     goal: body.goal || "—",
     level: body.level || "—",
     preferredDateTime: body.preferredDateTime || "—",
@@ -74,7 +76,7 @@ export async function POST(request: Request) {
       .values({
         name,
         whatsapp,
-        email: body.email?.trim() || null,
+        email,
         goal: body.goal || null,
         level: body.level || null,
         preferredDatetime: body.preferredDateTime || null,
@@ -95,11 +97,11 @@ export async function POST(request: Request) {
     console.error("[lead] DB persist failed:", err);
   }
 
-  // Newsletter opt-in — requires an email address; never blocks the enquiry.
-  if (body.subscribe && body.email) {
+  // Newsletter opt-in — same email as the enquiry; never blocks it.
+  if (body.subscribe) {
     try {
       upsertSubscriber({
-        email: body.email,
+        email,
         name,
         source: "consultation",
         meta: {

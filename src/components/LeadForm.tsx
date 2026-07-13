@@ -13,11 +13,13 @@ interface FormState {
   goal: Goal | "";
   level: string;
   name: string;
+  /** Country calling code, e.g. "+91". */
+  code: string;
   whatsapp: string;
   email: string;
   preferredDateTime: string;
   message: string;
-  /** Newsletter opt-in. */
+  /** Newsletter opt-in — uses the same email. */
   subscribe: boolean;
   /** Honeypot — must stay empty. */
   company: string;
@@ -27,6 +29,7 @@ const initial: FormState = {
   goal: "",
   level: "",
   name: "",
+  code: "+91",
   whatsapp: "",
   email: "",
   preferredDateTime: "",
@@ -38,11 +41,16 @@ const initial: FormState = {
 const goals: Goal[] = ["fat-loss", "muscle-gain", "recomp", "lifestyle"];
 const levels = ["Beginner", "Intermediate", "Advanced"];
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function LeadForm() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
+  // Set when the user tries to continue with invalid fields — reveals the
+  // per-field messages instead of silently blocking.
+  const [attempted, setAttempted] = useState(false);
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -57,29 +65,38 @@ export function LeadForm() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  // Step 1 needs a goal; step 2 needs name + a valid-ish whatsapp number and
-  // a well-formed email when one is given.
-  const emailOk = form.email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
-  const canContinue =
-    step === 0
-      ? form.goal !== ""
-      : step === 1
-        ? form.name.trim().length > 1 && form.whatsapp.replace(/\D/g, "").length >= 10 && emailOk
-        : true;
-  // Tell the user why the button is disabled instead of leaving them guessing.
-  const continueHint =
-    step === 0 && form.goal === ""
-      ? "Pick a goal to continue."
-      : step === 1 && !canContinue
-        ? form.name.trim().length <= 1
-          ? "Please enter your name."
-          : form.whatsapp.replace(/\D/g, "").length < 10
-            ? "Please enter a 10-digit WhatsApp number."
-            : "That email doesn't look right."
-        : "";
+  /* ---------------- validation ---------------- */
+  const goalError = form.goal === "" ? "Please pick a goal." : "";
+  const nameError = form.name.trim().length >= 2 ? "" : "Please enter your full name.";
+  const codeOk = /^\+\d{1,3}$/.test(form.code.trim());
+  const waDigits = form.whatsapp.replace(/\D/g, "");
+  const whatsappError = !codeOk
+    ? "Country code must look like +91."
+    : form.whatsapp.trim() !== "" && /[^\d\s-]/.test(form.whatsapp.trim())
+      ? "The number can only contain digits."
+      : form.code.trim() === "+91"
+        ? waDigits.length === 10
+          ? ""
+          : "Enter the 10-digit mobile number (without the country code)."
+        : waDigits.length >= 6 && waDigits.length <= 14
+          ? ""
+          : "Enter a valid number for that country code.";
+  const emailError = EMAIL_RE.test(form.email.trim()) ? "" : "Please enter a valid email address.";
+  const detailsValid = !nameError && !whatsappError && !emailError;
 
   function advance() {
-    if (canContinue && step < 2) setStep((s) => s + 1);
+    const ok = step === 0 ? !goalError : step === 1 ? detailsValid : true;
+    if (!ok) {
+      setAttempted(true);
+      return;
+    }
+    setAttempted(false);
+    if (step < 2) setStep((s) => s + 1);
+  }
+
+  function back() {
+    setAttempted(false);
+    setStep((s) => s - 1);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -89,19 +106,18 @@ export function LeadForm() {
       advance();
       return;
     }
-    // Opted into the newsletter → we need somewhere to send it.
-    if (form.subscribe && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setStatus("error");
-      setError("Add a valid email for the newsletter, or untick the newsletter box.");
-      return;
-    }
     setStatus("submitting");
     setError("");
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          // Full international format, e.g. "+919876543210".
+          whatsapp: `${form.code.trim()}${waDigits}`,
+          email: form.email.trim(),
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -125,7 +141,7 @@ export function LeadForm() {
         <h3 className="mt-4 font-display text-2xl uppercase">Request received!</h3>
         <p className="mt-2 text-muted">
           {`Thanks ${form.name.split(" ")[0]} — I'll reach out on WhatsApp shortly to confirm your consultation.`}
-          {form.subscribe && form.email && " You're also on the newsletter list — welcome!"}
+          {form.subscribe && " You're also on the newsletter list — welcome!"}
         </p>
       </div>
     );
@@ -170,6 +186,7 @@ export function LeadForm() {
                   </button>
                 ))}
               </div>
+              <FieldError show={attempted} message={goalError} />
               <div>
                 <label className="mb-2 block text-sm text-muted">Your current level (optional)</label>
                 <div className="flex flex-wrap gap-2">
@@ -198,35 +215,58 @@ export function LeadForm() {
               <Field label="Full name" required>
                 <input
                   type="text"
-                  required
                   value={form.name}
                   onChange={(e) => update({ name: e.target.value })}
-                  className={inputCls}
+                  className={inputCls(attempted && !!nameError)}
                   placeholder="Your name"
                   autoComplete="name"
                 />
+                <FieldError show={attempted} message={nameError} />
               </Field>
               <Field label="WhatsApp number" required>
-                <input
-                  type="tel"
-                  required
-                  value={form.whatsapp}
-                  onChange={(e) => update({ whatsapp: e.target.value })}
-                  className={inputCls}
-                  placeholder="10-digit mobile number"
-                  autoComplete="tel"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    value={form.code}
+                    onChange={(e) => update({ code: e.target.value })}
+                    className={inputCls(attempted && !codeOk, "w-24 shrink-0 text-center")}
+                    aria-label="Country code"
+                    autoComplete="tel-country-code"
+                  />
+                  <input
+                    type="tel"
+                    value={form.whatsapp}
+                    onChange={(e) => update({ whatsapp: e.target.value })}
+                    className={inputCls(attempted && !!whatsappError && codeOk)}
+                    placeholder="98765 43210"
+                    autoComplete="tel-national"
+                  />
+                </div>
+                <FieldError show={attempted} message={whatsappError} />
               </Field>
-              <Field label="Email (optional)">
+              <Field label="Email" required>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => update({ email: e.target.value })}
-                  className={inputCls}
+                  className={inputCls(attempted && !!emailError)}
                   placeholder="you@example.com"
                   autoComplete="email"
                 />
+                <FieldError show={attempted} message={emailError} />
               </Field>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
+                <input
+                  type="checkbox"
+                  checked={form.subscribe}
+                  onChange={(e) => update({ subscribe: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent,#ff5722)]"
+                />
+                <span className="text-sm text-muted">
+                  Send me the FITIZENS newsletter — fitness tips and updates to the email
+                  above. Unsubscribe anytime with one click.
+                </span>
+              </label>
             </fieldset>
           )}
 
@@ -238,7 +278,7 @@ export function LeadForm() {
                   type="datetime-local"
                   value={form.preferredDateTime}
                   onChange={(e) => update({ preferredDateTime: e.target.value })}
-                  className={inputCls}
+                  className={inputCls(false)}
                 />
               </Field>
               <Field label="Anything else? (optional)">
@@ -246,41 +286,10 @@ export function LeadForm() {
                   value={form.message}
                   onChange={(e) => update({ message: e.target.value })}
                   rows={4}
-                  className={inputCls}
+                  className={inputCls(false)}
                   placeholder="Tell me a little about where you're starting from…"
                 />
               </Field>
-              <div className="rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
-                <label className="flex cursor-pointer items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={form.subscribe}
-                    onChange={(e) => update({ subscribe: e.target.checked })}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-accent,#ff5722)]"
-                  />
-                  <span className="text-sm text-muted">
-                    Send me the FITIZENS newsletter — fitness tips and updates. Unsubscribe
-                    anytime with one click.
-                  </span>
-                </label>
-                {form.subscribe && (
-                  <div className="mt-3 pl-7">
-                    <label className="block">
-                      <span className="mb-1 block text-xs text-muted">
-                        {form.email ? "Sending to" : "Where should we send it?"}
-                      </span>
-                      <input
-                        type="email"
-                        value={form.email}
-                        onChange={(e) => update({ email: e.target.value })}
-                        className={inputCls}
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                      />
-                    </label>
-                  </div>
-                )}
-              </div>
             </fieldset>
           )}
         </motion.div>
@@ -306,7 +315,7 @@ export function LeadForm() {
 
       <div className="mt-6 flex items-center justify-between gap-3">
         {step > 0 ? (
-          <Button key="back" type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>
+          <Button key="back" type="button" variant="ghost" onClick={back}>
             ← Back
           </Button>
         ) : (
@@ -317,7 +326,7 @@ export function LeadForm() {
             one node lets the browser fire the click's default action against the
             swapped-in submit button and submit the form a step early. */}
         {step < 2 ? (
-          <Button key="continue" type="button" onClick={advance} disabled={!canContinue}>
+          <Button key="continue" type="button" onClick={advance}>
             Continue →
           </Button>
         ) : (
@@ -326,15 +335,19 @@ export function LeadForm() {
           </Button>
         )}
       </div>
-      {continueHint && (
-        <p className="mt-3 text-right text-xs text-muted/70">{continueHint}</p>
-      )}
     </form>
   );
 }
 
-const inputCls =
-  "w-full rounded-xl border border-line bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const inputCls = (invalid: boolean, width = "w-full") =>
+  `${width} rounded-xl border bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent ${
+    invalid ? "border-bad" : "border-line"
+  }`;
+
+function FieldError({ show, message }: { show: boolean; message: string }) {
+  if (!show || !message) return null;
+  return <p className="mt-2 text-xs text-bad">{message}</p>;
+}
 
 function Field({
   label,
