@@ -38,7 +38,8 @@ function buildJsonLd(
         image,
         url: site.url,
         email: trainer.email,
-        telephone: `+${trainer.whatsapp}`,
+        // Phone only when the trainer chose to publish it.
+        ...(trainer.showWhatsapp ? { telephone: `+${trainer.whatsapp}` } : {}),
         areaServed: "Worldwide (online coaching)",
         address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressRegion: "Telangana", addressCountry: "IN" },
       },

@@ -46,7 +46,8 @@ function parseGallery(raw: string): string[] {
   }
 }
 
-export async function updateTrainerAction(formData: FormData) {
+/** Shared save for the trainer form; `profileOverride` swaps the profile image. */
+async function saveTrainer(formData: FormData, profileOverride?: string) {
   const db = getDb();
   const statRows = parseStats(String(formData.get("stats") ?? "[]"));
   const gallery = parseGallery(String(formData.get("galleryImages") ?? "[]"));
@@ -71,9 +72,10 @@ export async function updateTrainerAction(formData: FormData) {
           location: str(formData, "location"),
           email: str(formData, "email"),
           whatsapp: str(formData, "whatsapp").replace(/\D/g, ""),
+          showWhatsapp: formData.get("showWhatsapp") != null,
           certificationsJson: lines(formData, "certifications"),
           certificateImage: str(formData, "certificateImage") || null,
-          profileImage: str(formData, "profileImage"),
+          profileImage: profileOverride ?? str(formData, "profileImage"),
           galleryImagesJson: JSON.stringify(gallery),
         })
         .where(eq(t.trainer.id, 1))
@@ -90,4 +92,18 @@ export async function updateTrainerAction(formData: FormData) {
     }),
   });
   redirect("/admin/trainer?saved=1");
+}
+
+export async function updateTrainerAction(formData: FormData) {
+  await saveTrainer(formData);
+}
+
+/**
+ * "Use as profile picture" button in the gallery — submits the whole form via
+ * formAction, so pending edits are saved together with the new profile image.
+ */
+export async function pickProfileImageAction(formData: FormData) {
+  const pick = str(formData, "profilePick");
+  const valid = pick.startsWith("/uploads/") || pick.startsWith("/images/");
+  await saveTrainer(formData, valid ? pick : undefined);
 }

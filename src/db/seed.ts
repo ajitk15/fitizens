@@ -31,6 +31,7 @@ export function ensureSeeded(db: Db): void {
         location: defaults.trainer.location,
         email: defaults.trainer.email,
         whatsapp: defaults.trainer.whatsapp,
+        showWhatsapp: defaults.trainer.showWhatsapp,
         certificationsJson: JSON.stringify(defaults.trainer.certifications),
         certificateImage: defaults.trainer.certificateImage ?? null,
         profileImage: defaults.trainer.profileImage,

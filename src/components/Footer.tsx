@@ -69,17 +69,19 @@ export async function Footer() {
                 {trainer.email}
               </a>
             </li>
-            <li>
-              <a
-                href={site.whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-accent"
-              >
-                <SocialIcon name="whatsapp" size={16} />
-                +{trainer.whatsapp}
-              </a>
-            </li>
+            {trainer.showWhatsapp && (
+              <li>
+                <a
+                  href={site.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-muted transition-colors hover:text-accent"
+                >
+                  <SocialIcon name="whatsapp" size={16} />
+                  +{trainer.whatsapp}
+                </a>
+              </li>
+            )}
           </ul>
           {socials.length > 0 && (
             <div className="mt-5 flex flex-wrap gap-2">

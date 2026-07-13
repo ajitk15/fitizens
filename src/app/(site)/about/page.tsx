@@ -114,17 +114,19 @@ export default async function AboutPage() {
                 </span>
                 {trainer.email}
               </a>
-              <a
-                href={site.whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
-                  <SocialIcon name="whatsapp" size={16} />
-                </span>
-                +{trainer.whatsapp}
-              </a>
+              {trainer.showWhatsapp && (
+                <a
+                  href={site.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                    <SocialIcon name="whatsapp" size={16} />
+                  </span>
+                  +{trainer.whatsapp}
+                </a>
+              )}
               {socials.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {socials.map((s) => (

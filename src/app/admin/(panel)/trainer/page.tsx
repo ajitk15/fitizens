@@ -1,11 +1,11 @@
 import { asc } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { getTrainer } from "@/lib/content";
-import { AdminCard, AdminHeading, Field, Input, Textarea, SubmitButton } from "@/components/admin/ui";
+import { AdminCard, AdminHeading, Checkbox, Field, Input, Textarea, SubmitButton } from "@/components/admin/ui";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { StatsEditor } from "@/components/admin/StatsEditor";
 import { GalleryEditor } from "@/components/admin/GalleryEditor";
-import { updateTrainerAction } from "./actions";
+import { updateTrainerAction, pickProfileImageAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +56,17 @@ export default async function TrainerAdminPage({
               <Input name="whatsapp" defaultValue={trainer.whatsapp} />
             </Field>
           </div>
+          <div className="mt-4">
+            <Checkbox
+              name="showWhatsapp"
+              label="Show the WhatsApp number and chat buttons on the website"
+              defaultChecked={trainer.showWhatsapp}
+            />
+            <p className="mt-1 pl-6 text-xs text-muted/70">
+              Unchecked: the number, the floating WhatsApp button and all chat links disappear
+              from the public site — visitors contact you via the form and email instead.
+            </p>
+          </div>
         </AdminCard>
 
         <AdminCard title="Bio & philosophy">
@@ -88,7 +99,15 @@ export default async function TrainerAdminPage({
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                 Gallery images (About page)
               </span>
-              <GalleryEditor name="galleryImages" initial={trainer.galleryImages} />
+              <p className="mb-2 text-xs text-muted/70">
+                ★ on a photo makes it the profile picture (saves the form immediately).
+              </p>
+              <GalleryEditor
+                name="galleryImages"
+                initial={trainer.galleryImages}
+                profileAction={pickProfileImageAction}
+                currentProfile={trainer.profileImage}
+              />
             </div>
           </div>
         </AdminCard>

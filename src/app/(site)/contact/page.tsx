@@ -78,19 +78,21 @@ export default async function ContactPage() {
               <div className="rounded-2xl border border-line bg-ink-card p-6">
                 <h3 className="font-display text-xl uppercase">Reach me directly</h3>
                 <ul className="mt-4 space-y-3 text-sm">
-                  <li>
-                    <a
-                      href={site.whatsappLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
-                    >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
-                        <SocialIcon name="whatsapp" size={16} />
-                      </span>
-                      +{trainer.whatsapp}
-                    </a>
-                  </li>
+                  {trainer.showWhatsapp && (
+                    <li>
+                      <a
+                        href={site.whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-3 text-muted transition-colors hover:text-accent"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-accent transition-colors group-hover:border-accent">
+                          <SocialIcon name="whatsapp" size={16} />
+                        </span>
+                        +{trainer.whatsapp}
+                      </a>
+                    </li>
+                  )}
                   <li>
                     <a
                       href={`mailto:${trainer.email}`}

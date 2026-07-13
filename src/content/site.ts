@@ -21,6 +21,8 @@ export interface Trainer {
   email: string;
   /** Digits only, no +, used for wa.me and tel: links */
   whatsapp: string;
+  /** When false the number, chat buttons and JSON-LD phone are hidden site-wide. */
+  showWhatsapp: boolean;
   certifications: string[];
   /** Optional scan/photo of the certificate, shown on the About page. */
   certificateImage?: string;
@@ -114,6 +116,7 @@ export const trainer: Trainer = {
   location: "Hyderabad, Telangana",
   email: "satya.muddena@gmail.com",
   whatsapp: "919949191359",
+  showWhatsapp: true,
   certifications: ["INFS-Certified Nutrition & Fitness Consultant"],
   certificateImage: "/images/infs-certificate.jpeg",
   profileImage: "/images/image1.jpeg",

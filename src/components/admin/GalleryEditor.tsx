@@ -12,10 +12,16 @@ export function GalleryEditor({
   name,
   initial,
   kind = "gallery",
+  profileAction,
+  currentProfile,
 }: {
   name: string;
   initial: string[];
   kind?: ImageKind;
+  /** Server action for the ★ "use as profile picture" button (submits the whole form). */
+  profileAction?: (formData: FormData) => Promise<void>;
+  /** Path of the current profile image — shown with a badge instead of a ★. */
+  currentProfile?: string;
 }) {
   const [paths, setPaths] = useState<string[]>(initial);
   const [busy, setBusy] = useState(false);
@@ -56,11 +62,35 @@ export function GalleryEditor({
         {paths.map((p, i) => (
           <div key={`${p}-${i}`} className="group relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p} alt="" className="h-20 w-20 rounded-lg border border-line object-cover" />
+            <img
+              src={p}
+              alt=""
+              className={`h-20 w-20 rounded-lg border object-cover ${
+                currentProfile === p ? "border-accent" : "border-line"
+              }`}
+            />
+            {currentProfile === p && (
+              <span className="absolute left-1 top-1 rounded bg-accent px-1 text-[0.6rem] font-bold uppercase text-ink">
+                Profile
+              </span>
+            )}
             <div className="absolute inset-x-0 bottom-0 hidden justify-center gap-1 rounded-b-lg bg-ink/80 py-0.5 group-hover:flex">
               <button type="button" aria-label="Move left" onClick={() => move(i, -1)} className="px-1 text-xs text-muted hover:text-accent">
                 ←
               </button>
+              {profileAction && currentProfile !== p && (
+                <button
+                  type="submit"
+                  name="profilePick"
+                  value={p}
+                  formAction={profileAction}
+                  aria-label="Use as profile picture"
+                  title="Use as profile picture (saves immediately)"
+                  className="px-1 text-xs text-muted hover:text-accent"
+                >
+                  ★
+                </button>
+              )}
               <button
                 type="button"
                 aria-label="Remove image"

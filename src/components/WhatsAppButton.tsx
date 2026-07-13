@@ -1,8 +1,9 @@
-import { getSite } from "@/lib/content";
+import { getSite, getTrainer } from "@/lib/content";
 
 /** Floating WhatsApp button — high-converting for the India market. */
 export async function WhatsAppButton() {
-  const site = await getSite();
+  const [site, trainer] = await Promise.all([getSite(), getTrainer()]);
+  if (!trainer.showWhatsapp) return null;
   return (
     <a
       href={site.whatsappLink}
