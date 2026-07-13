@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "./Button";
 import { CalendlyEmbed } from "./CalendlyEmbed";
+import { PhoneField, isPhoneValid, phoneToE164 } from "./PhoneField";
 import { goalLabels, type Goal } from "@/content/site";
+import type { CountryCode } from "libphonenumber-js";
 
 const GOAL_VALUES: Goal[] = ["fat-loss", "muscle-gain", "recomp", "lifestyle"];
 
@@ -28,8 +30,9 @@ interface FormState {
   goal: Goal | "";
   level: string;
   name: string;
-  /** Country calling code, e.g. "+91". */
-  code: string;
+  /** ISO-2 country for the phone number, e.g. "IN". */
+  country: CountryCode;
+  /** National phone number as typed. */
   whatsapp: string;
   email: string;
   message: string;
@@ -43,7 +46,7 @@ const initial: FormState = {
   goal: "",
   level: "",
   name: "",
-  code: "+91",
+  country: "IN",
   whatsapp: "",
   email: "",
   message: "",
@@ -104,23 +107,17 @@ export function LeadForm({
   /* ---------------- validation ---------------- */
   const goalError = form.goal === "" ? "Please pick a goal." : "";
   const nameError = form.name.trim().length >= 2 ? "" : "Please enter your full name.";
-  const codeOk = /^\+\d{1,3}$/.test(form.code.trim());
-  const waDigits = form.whatsapp.replace(/\D/g, "");
-  const whatsappError = !codeOk
-    ? "Country code must look like +91."
-    : form.whatsapp.trim() !== "" && /[^\d\s-]/.test(form.whatsapp.trim())
-      ? "The number can only contain digits."
-      : form.code.trim() === "+91"
-        ? waDigits.length === 10
-          ? ""
-          : "Enter the 10-digit mobile number (without the country code)."
-        : waDigits.length >= 6 && waDigits.length <= 14
-          ? ""
-          : "Enter a valid number for that country code.";
+  const phoneValue = { country: form.country, national: form.whatsapp };
+  const whatsappError =
+    form.whatsapp.trim() === ""
+      ? "Please enter your WhatsApp number."
+      : isPhoneValid(phoneValue)
+        ? ""
+        : "Enter a valid mobile number for the selected country.";
   const emailError = EMAIL_RE.test(form.email.trim()) ? "" : "Please enter a valid email address.";
   const detailsValid = !nameError && !whatsappError && !emailError;
 
-  const fullWhatsapp = `${form.code.trim()}${waDigits}`;
+  const fullWhatsapp = phoneToE164(phoneValue) ?? "";
   const priceLabel = `${consultation.currency === "INR" ? "₹" : ""}${consultation.price.toLocaleString("en-IN")}`;
 
   function back() {
@@ -331,24 +328,11 @@ export function LeadForm({
                 <FieldError show={attempted} message={nameError} />
               </Field>
               <Field label="WhatsApp number" required>
-                <div className="flex gap-2">
-                  <input
-                    type="tel"
-                    value={form.code}
-                    onChange={(e) => update({ code: e.target.value })}
-                    className={inputCls(attempted && !codeOk, "w-24 shrink-0 text-center")}
-                    aria-label="Country code"
-                    autoComplete="tel-country-code"
-                  />
-                  <input
-                    type="tel"
-                    value={form.whatsapp}
-                    onChange={(e) => update({ whatsapp: e.target.value })}
-                    className={inputCls(attempted && !!whatsappError && codeOk)}
-                    placeholder="98765 43210"
-                    autoComplete="tel-national"
-                  />
-                </div>
+                <PhoneField
+                  value={phoneValue}
+                  onChange={(next) => update({ country: next.country, whatsapp: next.national })}
+                  invalid={attempted && !!whatsappError}
+                />
                 <FieldError show={attempted} message={whatsappError} />
               </Field>
               <Field label="Email" required>

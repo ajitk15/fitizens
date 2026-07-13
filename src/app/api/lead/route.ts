@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidPhoneNumber } from "libphonenumber-js";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { getTrainer } from "@/lib/content";
@@ -41,17 +42,17 @@ export async function POST(request: Request) {
   }
 
   const name = (body.name || "").trim();
+  // The client submits a full E.164 number (+<country><number>); validate it
+  // against real per-country numbering rules — never trust the client.
   const whatsapp = (body.whatsapp || "").replace(/\s+/g, "");
-  const digits = whatsapp.replace(/\D/g, "");
   const email = (body.email || "").trim();
 
   if (name.length < 2) {
     return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
   }
-  // International format required: +<country code><number>, 11–15 digits total.
-  if (!whatsapp.startsWith("+") || digits.length < 11 || digits.length > 15) {
+  if (!isValidPhoneNumber(whatsapp)) {
     return NextResponse.json(
-      { error: "Please enter your WhatsApp number with country code, e.g. +91 98765 43210." },
+      { error: "Please enter a valid WhatsApp number with country code." },
       { status: 400 },
     );
   }
