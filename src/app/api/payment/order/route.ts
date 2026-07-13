@@ -3,7 +3,12 @@ import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { getConsultation } from "@/lib/content";
-import { razorpayConfigured, razorpayKeyId, createRazorpayOrder } from "@/lib/razorpay";
+import {
+  razorpayConfigured,
+  razorpayKeyId,
+  createRazorpayOrder,
+  paymentBypassAllowed,
+} from "@/lib/razorpay";
 
 /**
  * Creates a Razorpay order for a consultation booking. The amount is derived
@@ -12,7 +17,7 @@ import { razorpayConfigured, razorpayKeyId, createRazorpayOrder } from "@/lib/ra
  */
 export async function POST(request: Request) {
   if (!razorpayConfigured()) {
-    return NextResponse.json({ configured: false });
+    return NextResponse.json({ configured: false, bypassAllowed: paymentBypassAllowed() });
   }
 
   let body: { bookingId?: number };

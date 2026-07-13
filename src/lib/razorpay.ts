@@ -11,6 +11,19 @@ export function razorpayConfigured(): boolean {
   return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 }
 
+/**
+ * Whether the payment step may be skipped for testing. Only when no real
+ * payment provider is configured AND we're not in production (or an explicit
+ * opt-in env is set). Impossible on the deployed site; auto-disables the
+ * moment real Razorpay keys are added.
+ */
+export function paymentBypassAllowed(): boolean {
+  return (
+    !razorpayConfigured() &&
+    (process.env.NODE_ENV !== "production" || process.env.ALLOW_PAYMENT_BYPASS === "true")
+  );
+}
+
 export function razorpayKeyId(): string {
   return process.env.RAZORPAY_KEY_ID ?? "";
 }

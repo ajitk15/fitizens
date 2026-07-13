@@ -90,6 +90,7 @@ export function LeadForm({
 
   const [payState, setPayState] = useState<PayState>("idle");
   const [payError, setPayError] = useState("");
+  const [bypassAllowed, setBypassAllowed] = useState(false);
   const [booked, setBooked] = useState(false);
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
@@ -174,7 +175,10 @@ export function LeadForm({
         body: JSON.stringify({ bookingId }),
       });
       const data = await res.json().catch(() => ({}));
-      if (data.configured === false) return setPayState("unconfigured");
+      if (data.configured === false) {
+        setBypassAllowed(!!data.bypassAllowed);
+        return setPayState("unconfigured");
+      }
       if (!res.ok || !data.orderId) throw new Error(data.error || "Could not start payment.");
 
       const loaded = await loadRazorpayScript();
@@ -212,6 +216,26 @@ export function LeadForm({
     } catch (err) {
       setPayState("error");
       setPayError(err instanceof Error ? err.message : "Could not start payment.");
+    }
+  }
+
+  // Test-only: skip the charge and advance to slot selection.
+  async function bypassPayment() {
+    if (!bookingId) return;
+    setPayState("verifying");
+    setPayError("");
+    try {
+      const res = await fetch("/api/payment/bypass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      if (!res.ok) throw new Error();
+      setPayState("idle");
+      setStep(3);
+    } catch {
+      setPayState("unconfigured");
+      setPayError("Couldn't skip payment. Please try again.");
     }
   }
 
@@ -384,10 +408,31 @@ export function LeadForm({
               </div>
 
               {payState === "unconfigured" ? (
-                <p className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
-                  Online payment isn&apos;t set up yet. Please reach out on WhatsApp or email
-                  (see the contact card) and we&apos;ll arrange your consultation.
-                </p>
+                bypassAllowed ? (
+                  <div className="space-y-2">
+                    <p className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+                      Online payment isn&apos;t set up yet — but test mode is on, so you can skip
+                      it to try the rest of the booking flow.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={bypassPayment}
+                      className="w-full border-dashed"
+                    >
+                      Skip payment (test mode) →
+                    </Button>
+                    <p className="text-center text-xs text-muted/60">
+                      For testing only — no charge is made.
+                    </p>
+                    {payError && <p className="text-sm text-bad">{payError}</p>}
+                  </div>
+                ) : (
+                  <p className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+                    Online payment isn&apos;t set up yet. Please reach out on WhatsApp or email
+                    (see the contact card) and we&apos;ll arrange your consultation.
+                  </p>
+                )
               ) : (
                 <>
                   <Button
