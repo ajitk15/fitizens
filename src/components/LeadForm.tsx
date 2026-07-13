@@ -487,8 +487,10 @@ export function LeadForm({
   );
 }
 
-const inputCls = (invalid: boolean, extra = "") =>
-  `w-full rounded-xl border bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent ${
+// Width lives in `extra` (default w-full) so callers can override it without a
+// conflicting `w-full` — e.g. the fixed-width country-code box.
+const inputCls = (invalid: boolean, extra = "w-full") =>
+  `rounded-xl border bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent ${
     invalid ? "border-bad" : "border-line"
   } ${extra}`;
 
