@@ -18,7 +18,7 @@ const nav: { label: string; href: string }[] = [
   { label: "Socials", href: "/admin/socials" },
   { label: "Blog Posts", href: "/admin/posts" },
   { label: "Newsletter", href: "/admin/newsletter" },
-  { label: "Enquiries", href: "/admin/leads" },
+  { label: "Bookings", href: "/admin/leads" },
   { label: "Settings", href: "/admin/settings" },
   { label: "Audit Log", href: "/admin/audit" },
 ];

@@ -10,7 +10,9 @@ export default async function AdminDashboard() {
   const c = (q: string) => db.get<{ c: number }>(sql.raw(`SELECT COUNT(*) AS c FROM ${q}`))?.c ?? 0;
 
   const stats = [
-    { label: "New enquiries", value: c("leads WHERE status = 'new'"), href: "/admin/leads" },
+    { label: "New bookings", value: c("leads WHERE status = 'new'"), href: "/admin/leads" },
+    { label: "Paid bookings", value: c("leads WHERE stage IN ('paid','booked')"), href: "/admin/leads" },
+    { label: "Booked (scheduled)", value: c("leads WHERE stage = 'booked'"), href: "/admin/leads" },
     { label: "Newsletter subscribers", value: c("subscribers WHERE status = 'subscribed'"), href: "/admin/newsletter" },
     { label: "Blog posts", value: c("posts"), href: "/admin/posts" },
     { label: "Programs", value: c("programs"), href: "/admin/programs" },
@@ -34,9 +36,9 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <AdminCard title="Latest enquiries">
+        <AdminCard title="Latest bookings">
           {recentLeads.length === 0 ? (
-            <p className="text-sm text-muted">No enquiries yet.</p>
+            <p className="text-sm text-muted">No bookings yet.</p>
           ) : (
             <ul className="space-y-3">
               {recentLeads.map((l) => (

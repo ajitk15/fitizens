@@ -5,12 +5,42 @@ import { setLeadStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+const STAGE_LABEL: Record<string, string> = {
+  details: "Details",
+  paid: "Paid",
+  booked: "Booked",
+};
+
 export default async function LeadsAdminPage() {
   const leads = getDb().select().from(t.leads).orderBy(desc(t.leads.id)).all();
+
+  // Funnel counts for the analytics cards.
+  const count = (stage: string) => leads.filter((l) => l.stage === stage).length;
+  const paid = count("paid");
+  const booked = count("booked");
+  const started = leads.length;
+  const conversion = started ? Math.round((booked / started) * 100) : 0;
+  const funnel = [
+    { label: "Details captured", value: started },
+    { label: "Paid", value: paid + booked },
+    { label: "Booked", value: booked },
+    { label: "Booked / started", value: `${conversion}%` },
+  ];
+
   return (
     <>
-      <AdminHeading title="Enquiries" />
-      <AdminTable headers={["Contact", "Goal / Level", "Message", "Received", "Status", ""]}>
+      <AdminHeading title="Bookings" />
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {funnel.map((f) => (
+          <div key={f.label} className="rounded-2xl border border-line bg-ink-card p-5">
+            <p className="font-display text-4xl text-accent">{f.value}</p>
+            <p className="mt-1 text-sm text-muted">{f.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <AdminTable headers={["Contact", "Goal / Level", "Message", "Stage", "Received", "Status", ""]}>
         {leads.map((l) => (
           <tr key={l.id}>
             <td className="px-4 py-3">
@@ -31,9 +61,9 @@ export default async function LeadsAdminPage() {
             </td>
             <td className="max-w-xs px-4 py-3 text-muted">
               <span className="line-clamp-2">{l.message ?? "—"}</span>
-              {l.preferredDatetime && (
-                <span className="block text-xs text-accent/80">Prefers: {l.preferredDatetime}</span>
-              )}
+            </td>
+            <td className="px-4 py-3">
+              <StatusPill value={STAGE_LABEL[l.stage] ?? l.stage} />
             </td>
             <td className="px-4 py-3 text-xs text-muted">
               {new Date(l.createdAt).toLocaleString("en-IN")}
@@ -63,8 +93,8 @@ export default async function LeadsAdminPage() {
         ))}
         {leads.length === 0 && (
           <tr>
-            <td colSpan={6} className="px-4 py-8 text-center text-muted">
-              No enquiries yet.
+            <td colSpan={7} className="px-4 py-8 text-center text-muted">
+              No bookings yet.
             </td>
           </tr>
         )}

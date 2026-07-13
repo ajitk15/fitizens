@@ -172,7 +172,17 @@ export const leads = sqliteTable("leads", {
   level: text("level"),
   preferredDatetime: text("preferred_datetime"),
   message: text("message"),
-  status: text("status").notNull().default("new"), // new|contacted|closed
+  status: text("status").notNull().default("new"), // new|contacted|closed (trainer follow-up)
+  /** Booking funnel stage — details → paid → booked. */
+  stage: text("stage").notNull().default("details"),
+  amountPaise: integer("amount_paise"),
+  currency: text("currency"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  paidAt: text("paid_at"),
+  bookedAt: text("booked_at"),
+  /** Calendly event URI captured when the client schedules a slot. */
+  calendlyEventUri: text("calendly_event_uri"),
   createdAt: text("created_at").notNull(),
 });
 

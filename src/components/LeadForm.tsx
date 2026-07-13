@@ -1,13 +1,28 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "./Button";
+import { CalendlyEmbed } from "./CalendlyEmbed";
 import { goalLabels, type Goal } from "@/content/site";
 
 const GOAL_VALUES: Goal[] = ["fat-loss", "muscle-gain", "recomp", "lifestyle"];
 
-type Status = "idle" | "submitting" | "success" | "error";
+type Status = "idle" | "submitting" | "error";
+
+interface RazorpayInstance {
+  open: () => void;
+}
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
+  }
+}
 
 interface FormState {
   goal: Goal | "";
@@ -17,7 +32,6 @@ interface FormState {
   code: string;
   whatsapp: string;
   email: string;
-  preferredDateTime: string;
   message: string;
   /** Newsletter opt-in — uses the same email. */
   subscribe: boolean;
@@ -32,7 +46,6 @@ const initial: FormState = {
   code: "+91",
   whatsapp: "",
   email: "",
-  preferredDateTime: "",
   message: "",
   subscribe: false,
   company: "",
@@ -43,19 +56,42 @@ const levels = ["Beginner", "Intermediate", "Advanced"];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function LeadForm() {
+const STEPS = 4; // qualify · details · payment · book
+
+type PayState = "idle" | "creating" | "open" | "verifying" | "unconfigured" | "error";
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
+
+export function LeadForm({
+  calendlyUrl,
+  consultation,
+}: {
+  calendlyUrl?: string;
+  consultation: { price: number; currency: string; durationLabel: string };
+}) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
-  // Set when the user tries to continue with invalid fields — reveals the
-  // per-field messages instead of silently blocking.
   const [attempted, setAttempted] = useState(false);
+  const [bookingId, setBookingId] = useState<number | null>(null);
+
+  const [payState, setPayState] = useState<PayState>("idle");
+  const [payError, setPayError] = useState("");
+  const [booked, setBooked] = useState(false);
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
   // Pre-fill the goal when arriving from the program-finder quiz (/contact?goal=…).
-  // One-time sync from the URL (an external system) on mount; intentionally runs once.
   useEffect(() => {
     const g = new URLSearchParams(window.location.search).get("goal");
     if (!g || !(GOAL_VALUES as string[]).includes(g)) return;
@@ -84,53 +120,120 @@ export function LeadForm() {
   const emailError = EMAIL_RE.test(form.email.trim()) ? "" : "Please enter a valid email address.";
   const detailsValid = !nameError && !whatsappError && !emailError;
 
-  function advance() {
-    const ok = step === 0 ? !goalError : step === 1 ? detailsValid : true;
-    if (!ok) {
-      setAttempted(true);
-      return;
-    }
-    setAttempted(false);
-    if (step < 2) setStep((s) => s + 1);
-  }
+  const fullWhatsapp = `${form.code.trim()}${waDigits}`;
+  const priceLabel = `${consultation.currency === "INR" ? "₹" : ""}${consultation.price.toLocaleString("en-IN")}`;
 
   function back() {
     setAttempted(false);
+    setError("");
     setStep((s) => s - 1);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    // Enter on an earlier step advances instead of submitting half a form.
-    if (step < 2) {
-      advance();
-      return;
+  // Step 0 → validate goal → step 1. Step 1 → create the booking → step 2.
+  async function advanceFromForm() {
+    if (step === 0) {
+      if (goalError) return setAttempted(true);
+      setAttempted(false);
+      return setStep(1);
     }
+    // step === 1
+    if (!detailsValid) return setAttempted(true);
+    setAttempted(false);
     setStatus("submitting");
     setError("");
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          // Full international format, e.g. "+919876543210".
-          whatsapp: `${form.code.trim()}${waDigits}`,
-          email: form.email.trim(),
-        }),
+        body: JSON.stringify({ ...form, whatsapp: fullWhatsapp, email: form.email.trim() }),
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.bookingId) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
-      setStatus("success");
+      setBookingId(data.bookingId);
+      setStatus("idle");
+      setStep(2);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong.");
     }
   }
 
-  if (status === "success") {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (step <= 1) void advanceFromForm();
+  }
+
+  /* ---------------- payment ---------------- */
+  async function startPayment() {
+    if (!bookingId) return;
+    setPayState("creating");
+    setPayError("");
+    try {
+      const res = await fetch("/api/payment/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.configured === false) return setPayState("unconfigured");
+      if (!res.ok || !data.orderId) throw new Error(data.error || "Could not start payment.");
+
+      const loaded = await loadRazorpayScript();
+      if (!loaded || !window.Razorpay) throw new Error("Payment could not load. Please try again.");
+
+      const rzp = new window.Razorpay({
+        key: data.keyId,
+        order_id: data.orderId,
+        amount: data.amountPaise,
+        currency: data.currency,
+        name: "FITIZENS",
+        description: `Consultation call (${consultation.durationLabel})`,
+        prefill: { name: form.name, email: form.email.trim(), contact: fullWhatsapp },
+        theme: { color: "#ff5722" },
+        handler: async (resp: RazorpayResponse) => {
+          setPayState("verifying");
+          try {
+            const v = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ bookingId, ...resp }),
+            });
+            if (!v.ok) throw new Error();
+            setPayState("idle");
+            setStep(3);
+          } catch {
+            setPayState("error");
+            setPayError("We couldn't confirm your payment. If you were charged, contact us and we'll sort it out.");
+          }
+        },
+        modal: { ondismiss: () => setPayState("idle") },
+      });
+      rzp.open();
+      setPayState("open");
+    } catch (err) {
+      setPayState("error");
+      setPayError(err instanceof Error ? err.message : "Could not start payment.");
+    }
+  }
+
+  /* ---------------- booking (calendly) ---------------- */
+  const handleScheduled = useCallback(
+    (payload: { event?: { uri?: string } }) => {
+      if (!bookingId) return;
+      void fetch("/api/booking/booked", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId, calendlyEventUri: payload?.event?.uri }),
+      });
+      setBooked(true);
+    },
+    [bookingId],
+  );
+
+  /* ---------------- success ---------------- */
+  if (booked || (step === 3 && !calendlyUrl)) {
     return (
       <div className="rounded-2xl border border-accent/40 bg-ink-card p-8 text-center shadow-glow">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-accent">
@@ -138,9 +241,13 @@ export function LeadForm() {
             <path d="m5 13 4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h3 className="mt-4 font-display text-2xl uppercase">Request received!</h3>
+        <h3 className="mt-4 font-display text-2xl uppercase">
+          {booked ? "You're booked!" : "Payment received!"}
+        </h3>
         <p className="mt-2 text-muted">
-          {`Thanks ${form.name.split(" ")[0]} — I'll reach out on WhatsApp shortly to confirm your consultation.`}
+          {booked
+            ? `Thanks ${form.name.split(" ")[0]} — check your email for the confirmation and calendar invite. See you on the call!`
+            : "Thanks — I'll email you to lock in a time for your consultation."}
           {form.subscribe && " You're also on the newsletter list — welcome!"}
         </p>
       </div>
@@ -151,7 +258,7 @@ export function LeadForm() {
     <form onSubmit={handleSubmit} className="rounded-2xl border border-line bg-ink-card p-6 sm:p-8">
       {/* Progress */}
       <div className="mb-6 flex items-center gap-2">
-        {[0, 1, 2].map((s) => (
+        {Array.from({ length: STEPS }, (_, s) => (
           <div
             key={s}
             className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-accent" : "bg-line"}`}
@@ -255,6 +362,15 @@ export function LeadForm() {
                 />
                 <FieldError show={attempted} message={emailError} />
               </Field>
+              <Field label="Anything else? (optional)">
+                <textarea
+                  value={form.message}
+                  onChange={(e) => update({ message: e.target.value })}
+                  rows={3}
+                  className={inputCls(false)}
+                  placeholder="Tell me a little about where you're starting from…"
+                />
+              </Field>
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-ink px-4 py-3 transition-colors hover:border-accent/60">
                 <input
                   type="checkbox"
@@ -271,26 +387,59 @@ export function LeadForm() {
           )}
 
           {step === 2 && (
-            <fieldset className="space-y-5">
-              <legend className="font-display text-xl uppercase">Almost there</legend>
-              <Field label="Preferred date & time for a call">
-                <input
-                  type="datetime-local"
-                  value={form.preferredDateTime}
-                  onChange={(e) => update({ preferredDateTime: e.target.value })}
-                  className={inputCls(false)}
-                />
-              </Field>
-              <Field label="Anything else? (optional)">
-                <textarea
-                  value={form.message}
-                  onChange={(e) => update({ message: e.target.value })}
-                  rows={4}
-                  className={inputCls(false)}
-                  placeholder="Tell me a little about where you're starting from…"
-                />
-              </Field>
-            </fieldset>
+            <div className="space-y-5">
+              <legend className="font-display text-xl uppercase">Secure your slot</legend>
+              <div className="rounded-xl border border-line bg-ink px-4 py-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted">Consultation call · {consultation.durationLabel}</span>
+                  <span className="font-display text-2xl text-accent">{priceLabel}</span>
+                </div>
+                <p className="mt-2 text-xs text-muted/70">
+                  Pay to confirm, then pick a time that works for you on the next step.
+                </p>
+              </div>
+
+              {payState === "unconfigured" ? (
+                <p className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
+                  Online payment isn&apos;t set up yet. Please reach out on WhatsApp or email
+                  (see the contact card) and we&apos;ll arrange your consultation.
+                </p>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    onClick={startPayment}
+                    disabled={payState === "creating" || payState === "open" || payState === "verifying"}
+                    className="w-full"
+                  >
+                    {payState === "creating"
+                      ? "Starting…"
+                      : payState === "open"
+                        ? "Complete payment…"
+                        : payState === "verifying"
+                          ? "Confirming…"
+                          : `Pay ${priceLabel} & continue`}
+                  </Button>
+                  {payError && <p className="text-sm text-bad">{payError}</p>}
+                  <p className="text-center text-xs text-muted/60">Payments are processed securely by Razorpay.</p>
+                </>
+              )}
+            </div>
+          )}
+
+          {step === 3 && calendlyUrl && (
+            <div className="space-y-4">
+              <legend className="font-display text-xl uppercase">Pick your time</legend>
+              <p className="text-sm text-muted">
+                Payment received. Choose a slot below — you&apos;ll get a confirmation email and
+                calendar invite instantly.
+              </p>
+              <CalendlyEmbed
+                url={calendlyUrl}
+                prefill={{ name: form.name, email: form.email.trim() }}
+                onScheduled={handleScheduled}
+              />
+            </div>
           )}
         </motion.div>
       </AnimatePresence>
@@ -309,40 +458,39 @@ export function LeadForm() {
         </label>
       </div>
 
-      {status === "error" && (
-        <p className="mt-4 text-sm text-bad">{error}</p>
-      )}
+      {status === "error" && <p className="mt-4 text-sm text-bad">{error}</p>}
 
-      <div className="mt-6 flex items-center justify-between gap-3">
-        {step > 0 ? (
-          <Button key="back" type="button" variant="ghost" onClick={back}>
+      {/* Navigation — only the form steps (0,1) have Back/Continue here; payment
+          and booking drive their own progression. */}
+      {step <= 1 && (
+        <div className="mt-6 flex items-center justify-between gap-3">
+          {step > 0 ? (
+            <Button key="back" type="button" variant="ghost" onClick={back}>
+              ← Back
+            </Button>
+          ) : (
+            <span />
+          )}
+          <Button key="continue" type="submit" disabled={status === "submitting"}>
+            {status === "submitting" ? "Saving…" : step === 1 ? "Continue to payment →" : "Continue →"}
+          </Button>
+        </div>
+      )}
+      {step === 2 && (
+        <div className="mt-6">
+          <Button type="button" variant="ghost" onClick={back}>
             ← Back
           </Button>
-        ) : (
-          <span />
-        )}
-
-        {/* Distinct keys keep Continue and Submit as separate DOM nodes — reusing
-            one node lets the browser fire the click's default action against the
-            swapped-in submit button and submit the form a step early. */}
-        {step < 2 ? (
-          <Button key="continue" type="button" onClick={advance}>
-            Continue →
-          </Button>
-        ) : (
-          <Button key="submit" type="submit" disabled={status === "submitting"}>
-            {status === "submitting" ? "Sending…" : "Submit Request"}
-          </Button>
-        )}
-      </div>
+        </div>
+      )}
     </form>
   );
 }
 
-const inputCls = (invalid: boolean, width = "w-full") =>
-  `${width} rounded-xl border bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent ${
+const inputCls = (invalid: boolean, extra = "") =>
+  `w-full rounded-xl border bg-ink px-4 py-3 text-fg placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent ${
     invalid ? "border-bad" : "border-line"
-  }`;
+  } ${extra}`;
 
 function FieldError({ show, message }: { show: boolean; message: string }) {
   if (!show || !message) return null;

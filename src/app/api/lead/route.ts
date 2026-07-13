@@ -6,11 +6,13 @@ import { sendMail } from "@/lib/mail";
 import { upsertSubscriber } from "@/lib/newsletter";
 
 /**
- * Consultation enquiry endpoint.
+ * Consultation booking — step 1 (contact capture).
  *
- * Validates the submission, rejects bots via a honeypot, persists the enquiry
- * (visible in /admin/leads) and emails it to the trainer when SMTP is
- * configured. With `subscribe: true` the sender also joins the newsletter.
+ * Validates the submission, rejects bots via a honeypot, creates the booking
+ * at stage `details` (so the trainer always has the client's WhatsApp + email,
+ * even if they drop off before paying) and emails the trainer. Returns the
+ * booking id so the client can proceed to payment. With `subscribe: true` the
+ * sender also joins the newsletter.
  */
 
 interface LeadPayload {
@@ -19,7 +21,6 @@ interface LeadPayload {
   name?: string;
   whatsapp?: string;
   email?: string;
-  preferredDateTime?: string;
   message?: string;
   /** Newsletter opt-in from the form checkbox. */
   subscribe?: boolean;
@@ -64,12 +65,12 @@ export async function POST(request: Request) {
     email,
     goal: body.goal || "—",
     level: body.level || "—",
-    preferredDateTime: body.preferredDateTime || "—",
     message: body.message?.trim() || "—",
     receivedAt: new Date().toISOString(),
   };
 
-  // Persist first — a lead must never be lost to an email failure.
+  // Persist first — a booking must never be lost to an email failure.
+  let bookingId: number | null = null;
   try {
     const result = getDb()
       .insert(t.leads)
@@ -79,22 +80,24 @@ export async function POST(request: Request) {
         email,
         goal: body.goal || null,
         level: body.level || null,
-        preferredDatetime: body.preferredDateTime || null,
         message: body.message?.trim() || null,
+        stage: "details",
         createdAt: lead.receivedAt,
       })
       .run();
+    bookingId = Number(result.lastInsertRowid);
     audit({
       actor: "public",
       action: "lead",
       entityType: "lead",
-      entityId: Number(result.lastInsertRowid),
+      entityId: bookingId,
       after: lead,
       ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
       userAgent: request.headers.get("user-agent"),
     });
   } catch (err) {
     console.error("[lead] DB persist failed:", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
   // Newsletter opt-in — same email as the enquiry; never blocks it.
@@ -116,26 +119,26 @@ export async function POST(request: Request) {
 
   const trainer = await getTrainer();
   const to = process.env.LEAD_TO_EMAIL || trainer.email;
-  // Best-effort: the enquiry is already saved in the DB (visible in
+  // Best-effort: the booking is already saved in the DB (visible in
   // /admin/leads); without SMTP sendMail just logs.
   await sendMail({
     to,
-    subject: `New consultation enquiry — ${lead.name}`,
+    subject: `New consultation booking — ${lead.name}`,
     text: [
-      `New enquiry from the FITIZENS website:`,
+      `New booking started on the FITIZENS website:`,
       ``,
       `Name: ${lead.name}`,
       `WhatsApp: ${lead.whatsapp}`,
       `Email: ${lead.email}`,
       `Goal: ${lead.goal}`,
       `Level: ${lead.level}`,
-      `Preferred date/time: ${lead.preferredDateTime}`,
       `Message: ${lead.message}`,
       `Newsletter opt-in: ${body.subscribe ? "yes" : "no"}`,
       ``,
+      `Stage: details (payment + slot booking to follow)`,
       `Received: ${lead.receivedAt}`,
     ].join("\n"),
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, bookingId });
 }

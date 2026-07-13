@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import { LeadForm } from "@/components/LeadForm";
-import { CalendlyEmbed } from "@/components/CalendlyEmbed";
 import { SocialIcon } from "@/components/SocialIcon";
 import { getTrainer, getSite, getConsultation, getSocials } from "@/lib/content";
 
@@ -29,41 +28,17 @@ export default async function ContactPage() {
         <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
           <SectionHeading
             eyebrow="Contact & Booking"
-            title={<>Let&apos;s build <span className="text-accent">your plan</span></>}
-            subtitle={
-              site.calendlyUrl
-                ? `Pick a ${consultation.durationLabel} consultation slot below, or send an enquiry and I'll reach out on WhatsApp.`
-                : `Tell me about your goals and I'll get back to you on WhatsApp. Prefer to talk first? Book a ${consultation.durationLabel} consultation call.`
-            }
+            title={<>Book your <span className="text-accent">consultation</span></>}
+            subtitle={`Tell me your goal, secure your ${consultation.durationLabel} call, then pick a time that works — all in a couple of minutes.`}
           />
         </div>
       </section>
 
-      {site.calendlyUrl && (
-        <section className="mx-auto max-w-4xl px-4 pb-4 sm:px-6">
-          <Reveal>
-            <h2 className="mb-4 font-display text-2xl uppercase">
-              Pick a <span className="text-accent">time</span>
-            </h2>
-            <CalendlyEmbed url={site.calendlyUrl} />
-          </Reveal>
-        </section>
-      )}
-
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        {site.calendlyUrl && (
-          <div className="mb-10">
-            <SectionHeading
-              eyebrow="Prefer to write first?"
-              title={<>Send an <span className="text-accent">enquiry</span></>}
-              subtitle="Share your goals and I'll get back to you on WhatsApp — and you can still book a slot above anytime."
-            />
-          </div>
-        )}
         <div className="grid gap-10 lg:grid-cols-2">
-          {/* Lead form */}
+          {/* Booking wizard */}
           <Reveal>
-            <LeadForm />
+            <LeadForm calendlyUrl={site.calendlyUrl} consultation={consultation} />
           </Reveal>
 
           {/* Booking info + direct contact */}
