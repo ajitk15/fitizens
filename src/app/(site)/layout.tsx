@@ -74,6 +74,7 @@ export default async function SiteLayout({
           slots={site.popup.slots}
           note={site.popup.note}
           ctaLabel={site.ctaLabel}
+          calendlyUrl={site.calendlyUrl}
         />
       )}
     </>

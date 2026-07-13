@@ -139,6 +139,8 @@ export const siteSettings = sqliteTable("site_settings", {
   popupTimeTo: text("popup_time_to").notNull().default("20:00"),
   /** Page keys hidden from nav/sitemap (their URLs 404). See HIDEABLE_PAGES. */
   hiddenPagesJson: text("hidden_pages_json").notNull().default("[]"),
+  /** Public Calendly scheduling link — embedded on /contact, used by booking CTAs. */
+  calendlyUrl: text("calendly_url"),
 });
 
 /* ------------------------------------------------------------------ */

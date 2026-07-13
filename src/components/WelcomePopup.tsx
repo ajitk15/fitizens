@@ -11,6 +11,8 @@ interface WelcomePopupProps {
   slots: string;
   note: string;
   ctaLabel: string;
+  /** When set, the CTA opens Calendly and the slots block nudges to live availability. */
+  calendlyUrl?: string;
 }
 
 /**
@@ -27,7 +29,7 @@ export function WelcomePopup(props: WelcomePopupProps) {
   return <WelcomePopupInner {...props} />;
 }
 
-function WelcomePopupInner({ title, body, slots, note, ctaLabel }: WelcomePopupProps) {
+function WelcomePopupInner({ title, body, slots, note, ctaLabel, calendlyUrl }: WelcomePopupProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -91,7 +93,9 @@ function WelcomePopupInner({ title, body, slots, note, ctaLabel }: WelcomePopupP
                 <p className="text-xs font-semibold uppercase tracking-wider text-accent">
                   Available slots
                 </p>
-                <p className="mt-1 text-sm text-fg">{slots}</p>
+                <p className="mt-1 text-sm text-fg">
+                  {calendlyUrl ? "See live availability and book instantly online." : slots}
+                </p>
               </div>
               <div className="rounded-xl border border-line bg-ink px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-accent">
@@ -101,7 +105,12 @@ function WelcomePopupInner({ title, body, slots, note, ctaLabel }: WelcomePopupP
               </div>
             </div>
 
-            <ButtonLink href="/contact" size="lg" className="mt-7 w-full" onClick={dismiss}>
+            <ButtonLink
+              href={calendlyUrl || "/contact"}
+              size="lg"
+              className="mt-7 w-full"
+              onClick={dismiss}
+            >
               {ctaLabel}
             </ButtonLink>
             <button

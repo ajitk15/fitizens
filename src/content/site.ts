@@ -362,6 +362,8 @@ export const site = {
   whatsappLink: `https://wa.me/${trainer.whatsapp}`,
   /** Label used by every call-booking button — editable in /admin/settings. */
   ctaLabel: "Book a Consultation",
+  /** Calendly scheduling link — embedded on /contact; editable in /admin/settings. */
+  calendlyUrl: "https://calendly.com/satya-muddena/consultationcall",
   /** Home-page headlines — *word* renders in the accent colour; editable in /admin/settings. */
   heroHeadline: "Build Better *Health* — Inside and Out.",
   aboutHeading: "Coaching that's personalized, *science-based* & sustainable.",

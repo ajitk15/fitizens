@@ -213,6 +213,7 @@ export const getSite = cache(async (): Promise<typeof fallback.site> => {
     keywords: keywords.length ? keywords : fallback.site.keywords,
     whatsappLink: `https://wa.me/${trainer.whatsapp}`,
     ctaLabel: settings?.ctaLabel || fallback.site.ctaLabel,
+    calendlyUrl: settings?.calendlyUrl || fallback.site.calendlyUrl,
     heroHeadline: settings?.heroHeadline || fallback.site.heroHeadline,
     aboutHeading: settings?.aboutHeading || fallback.site.aboutHeading,
     hiddenPages: settings ? json<string[]>(settings.hiddenPagesJson, []) : [],

@@ -29,6 +29,18 @@ function normalizeSiteUrl(raw: string): string | null {
   }
 }
 
+/** Full http(s) URL incl. path (Calendly links carry the schedule in the path). */
+function normalizeUrl(raw: string): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw.includes("://") ? raw : `https://${raw}`);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
 export async function saveSettingsAction(formData: FormData) {
   const db = getDb();
   await auditedMutation({
@@ -44,6 +56,7 @@ export async function saveSettingsAction(formData: FormData) {
           siteUrl: normalizeSiteUrl(str(formData, "siteUrl")),
           keywordsJson: lines(formData, "keywords"),
           ctaLabel: str(formData, "ctaLabel") || "Book a Consultation",
+          calendlyUrl: normalizeUrl(str(formData, "calendlyUrl")),
           heroHeadline: str(formData, "heroHeadline") || "Build Better *Health* — Inside and Out.",
           aboutHeading:
             str(formData, "aboutHeading") ||

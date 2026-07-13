@@ -42,6 +42,17 @@ export default async function SettingsAdminPage({
             >
               <Input name="ctaLabel" defaultValue={site.ctaLabel} />
             </Field>
+            <Field
+              label="Calendly link"
+              hint="Public scheduling link — embedded on the contact page and opened by the home popup. Leave blank to use the default."
+            >
+              <Input
+                name="calendlyUrl"
+                type="url"
+                defaultValue={settings?.calendlyUrl ?? ""}
+                placeholder={site.calendlyUrl}
+              />
+            </Field>
           </div>
         </AdminCard>
 
