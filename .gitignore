@@ -35,7 +35,7 @@ yarn-error.log*
 !.env.example
 
 # runtime data (SQLite DB + uploads) — lives on a volume in production
-/data
+#/data
 
 # vercel
 .vercel
