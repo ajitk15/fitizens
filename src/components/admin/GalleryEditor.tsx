@@ -19,7 +19,7 @@ export function GalleryEditor({
   initial: string[];
   kind?: ImageKind;
   /** Server action for the ★ "use as profile picture" button (submits the whole form). */
-  profileAction?: (formData: FormData) => Promise<void>;
+  profileAction?: (pick: string, formData: FormData) => Promise<void>;
   /** Path of the current profile image — shown with a badge instead of a ★. */
   currentProfile?: string;
 }) {
@@ -81,9 +81,7 @@ export function GalleryEditor({
               {profileAction && currentProfile !== p && (
                 <button
                   type="submit"
-                  name="profilePick"
-                  value={p}
-                  formAction={profileAction}
+                  formAction={profileAction.bind(null, p)}
                   aria-label="Use as profile picture"
                   title="Use as profile picture (saves immediately)"
                   className="px-1 text-xs text-muted hover:text-accent"

@@ -101,9 +101,10 @@ export async function updateTrainerAction(formData: FormData) {
 /**
  * "Use as profile picture" button in the gallery — submits the whole form via
  * formAction, so pending edits are saved together with the new profile image.
+ * `pick` is bound per-button on the client (a form field name can't be used:
+ * React reserves the button's `name` to encode the action id).
  */
-export async function pickProfileImageAction(formData: FormData) {
-  const pick = str(formData, "profilePick");
+export async function pickProfileImageAction(pick: string, formData: FormData) {
   const valid = pick.startsWith("/uploads/") || pick.startsWith("/images/");
   await saveTrainer(formData, valid ? pick : undefined);
 }
