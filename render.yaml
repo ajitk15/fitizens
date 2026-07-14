@@ -44,3 +44,7 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+      # Optional — Zapier Catch Hook URL; each confirmed booking is POSTed here
+      # (e.g. to send the trainer a WhatsApp). No-op when unset.
+      - key: ZAPIER_BOOKING_WEBHOOK_URL
+        sync: false

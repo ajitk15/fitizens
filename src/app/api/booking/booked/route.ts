@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
+import { notifyBookingWebhook } from "@/lib/webhook";
 
 /**
  * Marks a booking `booked` once the client schedules a Calendly slot (the
@@ -34,8 +35,9 @@ export async function POST(request: Request) {
   }
 
   const uri = typeof body.calendlyEventUri === "string" ? body.calendlyEventUri.slice(0, 500) : null;
+  const bookedAt = new Date().toISOString();
   db.update(t.leads)
-    .set({ stage: "booked", bookedAt: new Date().toISOString(), calendlyEventUri: uri })
+    .set({ stage: "booked", bookedAt, calendlyEventUri: uri })
     .where(eq(t.leads.id, bookingId))
     .run();
   audit({
@@ -45,6 +47,20 @@ export async function POST(request: Request) {
     entityId: bookingId,
     after: { calendlyEventUri: uri },
     ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
+  });
+
+  // Push the confirmed booking (incl. the validated WhatsApp number) to an
+  // external automation — e.g. a Zapier hook that notifies the trainer.
+  await notifyBookingWebhook({
+    event: "booking.confirmed",
+    bookingId,
+    name: booking.name,
+    whatsapp: booking.whatsapp,
+    email: booking.email,
+    goal: booking.goal,
+    level: booking.level,
+    calendlyEventUri: uri,
+    bookedAt,
   });
 
   return NextResponse.json({ ok: true });
