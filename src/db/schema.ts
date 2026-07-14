@@ -19,7 +19,7 @@ export const trainer = sqliteTable("trainer", {
   email: text("email").notNull(),
   whatsapp: text("whatsapp").notNull(),
   /** Master switch: hides the number, chat buttons and JSON-LD phone when false. */
-  showWhatsapp: integer("show_whatsapp", { mode: "boolean" }).notNull().default(true),
+  showWhatsapp: integer("show_whatsapp", { mode: "boolean" }).notNull().default(false),
   certificationsJson: text("certifications_json").notNull(), // string[]
   /** Optional scan/photo of the certificate, shown on the About page. */
   certificateImage: text("certificate_image"),

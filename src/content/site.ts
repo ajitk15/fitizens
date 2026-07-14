@@ -116,7 +116,7 @@ export const trainer: Trainer = {
   location: "Hyderabad, Telangana",
   email: "satya.muddena@gmail.com",
   whatsapp: "919949191359",
-  showWhatsapp: true,
+  showWhatsapp: false,
   certifications: ["INFS-Certified Nutrition & Fitness Consultant"],
   certificateImage: "/images/infs-certificate.jpeg",
   profileImage: "/images/image1.jpeg",

@@ -967,7 +967,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": true
+          "default": false
         },
         "certifications_json": {
           "name": "certifications_json",
