@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminCard, AdminHeading, AdminTable, Field, Input, Textarea, Checkbox, SubmitButton } from "@/components/admin/ui";
+import { AdminCard, AdminHeading, AdminListControls, AdminTable, Field, Input, Select, Textarea, Checkbox, SubmitButton } from "@/components/admin/ui";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import { DeleteForm } from "@/components/admin/DeleteForm";
 import { saveTestimonialAction, deleteTestimonialAction } from "./actions";
@@ -11,14 +11,30 @@ export const dynamic = "force-dynamic";
 export default async function TestimonialsAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; q?: string; featured?: string; sort?: string }>;
 }) {
-  const { edit } = await searchParams;
+  const { edit, q = "", featured = "", sort = "order" } = await searchParams;
   const db = getDb();
-  const rows = db.select().from(t.testimonials).orderBy(asc(t.testimonials.displayOrder)).all();
+  const allRows = db.select().from(t.testimonials).orderBy(asc(t.testimonials.displayOrder)).all();
   const editing = edit
     ? db.select().from(t.testimonials).where(eq(t.testimonials.id, Number(edit))).get()
     : undefined;
+  const query = q.trim().toLowerCase();
+  const rows = allRows
+    .filter((r) => {
+      if (featured === "yes" && !r.featured) return false;
+      if (featured === "no" && r.featured) return false;
+      if (!query) return true;
+      return [r.clientName, r.quote, r.result]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      if (sort === "client") return a.clientName.localeCompare(b.clientName);
+      if (sort === "rating_desc") return b.rating - a.rating;
+      if (sort === "rating_asc") return a.rating - b.rating;
+      return a.displayOrder - b.displayOrder;
+    });
 
   return (
     <>
@@ -54,6 +70,26 @@ export default async function TestimonialsAdminPage({
       </AdminCard>
 
       <div className="mt-8">
+        <AdminListControls resetHref="/admin/testimonials">
+          <Field label="Search">
+            <Input name="q" defaultValue={q} placeholder="Client, result, quote…" />
+          </Field>
+          <Field label="Featured">
+            <Select name="featured" defaultValue={featured}>
+              <option value="">All testimonials</option>
+              <option value="yes">Featured only</option>
+              <option value="no">Not featured</option>
+            </Select>
+          </Field>
+          <Field label="Sort">
+            <Select name="sort" defaultValue={sort}>
+              <option value="order">Display order</option>
+              <option value="client">Client A-Z</option>
+              <option value="rating_desc">Rating high-low</option>
+              <option value="rating_asc">Rating low-high</option>
+            </Select>
+          </Field>
+        </AdminListControls>
         <AdminTable headers={["Client", "Quote", "Rating", "Featured", ""]}>
           {rows.map((r) => (
             <tr key={r.id}>

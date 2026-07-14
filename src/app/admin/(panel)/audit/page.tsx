@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { and, desc, eq, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminHeading, AdminTable } from "@/components/admin/ui";
+import { AdminHeading, AdminListControls, Field, Select, AdminTable } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,9 @@ function pretty(jsonStr: string | null): string {
 export default async function AuditAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ entity?: string; action?: string; page?: string }>;
+  searchParams: Promise<{ entity?: string; action?: string; page?: string; sort?: string }>;
 }) {
-  const { entity, action, page } = await searchParams;
+  const { entity, action, page, sort = "newest" } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const db = getDb();
 
@@ -33,7 +33,7 @@ export default async function AuditAdminPage({
     .select()
     .from(t.auditLog)
     .where(filters.length ? and(...filters) : undefined)
-    .orderBy(desc(t.auditLog.id))
+    .orderBy(sort === "oldest" ? asc(t.auditLog.id) : desc(t.auditLog.id))
     .limit(PAGE_SIZE + 1)
     .offset((pageNum - 1) * PAGE_SIZE)
     .all();
@@ -52,7 +52,7 @@ export default async function AuditAdminPage({
     .map((r) => r.v);
 
   const filterLink = (params: Record<string, string | undefined>) => {
-    const merged = { entity, action, ...params };
+    const merged = { entity, action, sort, ...params };
     const qs = Object.entries(merged)
       .filter(([, v]) => v)
       .map(([k, v]) => `${k}=${encodeURIComponent(v!)}`)
@@ -63,6 +63,17 @@ export default async function AuditAdminPage({
   return (
     <>
       <AdminHeading title="Audit Log" />
+
+      <AdminListControls resetHref="/admin/audit">
+        {entity && <input type="hidden" name="entity" value={entity} />}
+        {action && <input type="hidden" name="action" value={action} />}
+        <Field label="Sort">
+          <Select name="sort" defaultValue={sort}>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </Select>
+        </Field>
+      </AdminListControls>
 
       <div className="mb-4 flex flex-wrap gap-2 text-xs">
         <Link

@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminCard, AdminHeading, AdminTable, Field, Input, Textarea, StatusPill, SubmitButton } from "@/components/admin/ui";
+import { AdminCard, AdminHeading, AdminListControls, AdminTable, Field, Input, Select, Textarea, StatusPill, SubmitButton } from "@/components/admin/ui";
 import { DeleteForm } from "@/components/admin/DeleteForm";
 import { smtpConfigured } from "@/lib/mail";
 import { sendNewsletterAction, deleteSubscriberAction } from "./actions";
@@ -10,15 +10,32 @@ export const dynamic = "force-dynamic";
 export default async function NewsletterAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sent?: string; total?: string; failed?: string; error?: string }>;
+  searchParams: Promise<{ sent?: string; total?: string; failed?: string; error?: string; q?: string; status?: string; source?: string; sort?: string }>;
 }) {
-  const { sent, total, failed, error } = await searchParams;
-  const subscribers = getDb()
+  const { sent, total, failed, error, q = "", status = "", source = "", sort = "newest" } = await searchParams;
+  const allSubscribers = getDb()
     .select()
     .from(t.subscribers)
     .orderBy(desc(t.subscribers.id))
     .all();
-  const active = subscribers.filter((s) => s.status === "subscribed").length;
+  const query = q.trim().toLowerCase();
+  const sources = [...new Set(allSubscribers.map((s) => s.source))].sort();
+  const subscribers = allSubscribers
+    .filter((s) => {
+      if (status && s.status !== status) return false;
+      if (source && s.source !== source) return false;
+      if (!query) return true;
+      return [s.email, s.name, s.source, s.status]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      if (sort === "oldest") return a.id - b.id;
+      if (sort === "email") return a.email.localeCompare(b.email);
+      if (sort === "status") return a.status.localeCompare(b.status) || b.id - a.id;
+      return b.id - a.id;
+    });
+  const active = allSubscribers.filter((s) => s.status === "subscribed").length;
 
   return (
     <>
@@ -66,6 +83,36 @@ export default async function NewsletterAdminPage({
       </AdminCard>
 
       <div className="mt-8">
+        <AdminListControls resetHref="/admin/newsletter">
+          <Field label="Search">
+            <Input name="q" defaultValue={q} placeholder="Email, name, source…" />
+          </Field>
+          <Field label="Status">
+            <Select name="status" defaultValue={status}>
+              <option value="">All statuses</option>
+              <option value="subscribed">Subscribed</option>
+              <option value="unsubscribed">Unsubscribed</option>
+            </Select>
+          </Field>
+          <Field label="Source">
+            <Select name="source" defaultValue={source}>
+              <option value="">All sources</option>
+              {sources.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Sort">
+            <Select name="sort" defaultValue={sort}>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="email">Email A-Z</option>
+              <option value="status">Status A-Z</option>
+            </Select>
+          </Field>
+        </AdminListControls>
         <AdminTable headers={["Email", "Name", "Source", "Status", "Since", ""]}>
           {subscribers.map((s) => (
             <tr key={s.id}>

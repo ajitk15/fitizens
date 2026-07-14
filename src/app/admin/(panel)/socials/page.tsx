@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminCard, AdminHeading, AdminTable, Field, Input, SubmitButton } from "@/components/admin/ui";
+import { AdminCard, AdminHeading, AdminListControls, AdminTable, Field, Input, Select, SubmitButton } from "@/components/admin/ui";
 import { DeleteForm } from "@/components/admin/DeleteForm";
 import { SocialFields } from "@/components/admin/SocialFields";
 import { SocialIcon } from "@/components/SocialIcon";
@@ -12,14 +12,30 @@ export const dynamic = "force-dynamic";
 export default async function SocialsAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; q?: string; platform?: string; sort?: string }>;
 }) {
-  const { edit } = await searchParams;
+  const { edit, q = "", platform = "", sort = "order" } = await searchParams;
   const db = getDb();
-  const rows = db.select().from(t.socials).orderBy(asc(t.socials.displayOrder)).all();
+  const allRows = db.select().from(t.socials).orderBy(asc(t.socials.displayOrder)).all();
   const editing = edit
     ? db.select().from(t.socials).where(eq(t.socials.id, Number(edit))).get()
     : undefined;
+  const platforms = [...new Set(allRows.map((r) => r.platform))].sort();
+  const query = q.trim().toLowerCase();
+  const rows = allRows
+    .filter((r) => {
+      if (platform && r.platform !== platform) return false;
+      if (!query) return true;
+      return [r.platform, r.handle, r.url]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      if (sort === "platform") return a.platform.localeCompare(b.platform);
+      if (sort === "handle") return a.handle.localeCompare(b.handle);
+      if (sort === "followers_desc") return (b.followers ?? 0) - (a.followers ?? 0);
+      return a.displayOrder - b.displayOrder;
+    });
 
   return (
     <>
@@ -47,6 +63,29 @@ export default async function SocialsAdminPage({
       </AdminCard>
 
       <div className="mt-8">
+        <AdminListControls resetHref="/admin/socials">
+          <Field label="Search">
+            <Input name="q" defaultValue={q} placeholder="Platform, handle, URL…" />
+          </Field>
+          <Field label="Platform">
+            <Select name="platform" defaultValue={platform}>
+              <option value="">All platforms</option>
+              {platforms.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Sort">
+            <Select name="sort" defaultValue={sort}>
+              <option value="order">Display order</option>
+              <option value="platform">Platform A-Z</option>
+              <option value="handle">Handle A-Z</option>
+              <option value="followers_desc">Followers high-low</option>
+            </Select>
+          </Field>
+        </AdminListControls>
         <AdminTable headers={["Platform", "Handle", "URL", ""]}>
           {rows.map((r) => (
             <tr key={r.id}>

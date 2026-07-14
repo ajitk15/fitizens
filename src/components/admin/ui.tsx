@@ -67,6 +67,34 @@ export function SubmitButton({ children = "Save" }: { children?: ReactNode }) {
   );
 }
 
+export function AdminListControls({
+  children,
+  resetHref,
+}: {
+  children: ReactNode;
+  resetHref: string;
+}) {
+  return (
+    <form className="mb-4 rounded-2xl border border-line bg-ink-card p-4">
+      <div className="grid gap-3 md:grid-cols-4">{children}</div>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="submit"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-deep"
+        >
+          Apply
+        </button>
+        <Link
+          href={resetHref}
+          className="rounded-lg border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-accent hover:text-accent"
+        >
+          Reset
+        </Link>
+      </div>
+    </form>
+  );
+}
+
 export function AdminHeading({
   title,
   action,

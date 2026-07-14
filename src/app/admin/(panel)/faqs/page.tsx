@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminCard, AdminHeading, AdminTable, Field, Input, Textarea, SubmitButton } from "@/components/admin/ui";
+import { AdminCard, AdminHeading, AdminListControls, AdminTable, Field, Input, Select, Textarea, SubmitButton } from "@/components/admin/ui";
 import { DeleteForm } from "@/components/admin/DeleteForm";
 import { saveFaqAction, deleteFaqAction } from "./actions";
 
@@ -10,13 +10,27 @@ export const dynamic = "force-dynamic";
 export default async function FaqsAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; q?: string; category?: string; sort?: string }>;
 }) {
-  const { edit } = await searchParams;
+  const { edit, q = "", category = "", sort = "order" } = await searchParams;
   const db = getDb();
-  const rows = db.select().from(t.faqs).orderBy(asc(t.faqs.displayOrder)).all();
+  const allRows = db.select().from(t.faqs).orderBy(asc(t.faqs.displayOrder)).all();
   const editing = edit ? db.select().from(t.faqs).where(eq(t.faqs.id, Number(edit))).get() : undefined;
-  const categories = [...new Set(rows.map((r) => r.category))];
+  const categories = [...new Set(allRows.map((r) => r.category))].sort();
+  const query = q.trim().toLowerCase();
+  const rows = allRows
+    .filter((r) => {
+      if (category && r.category !== category) return false;
+      if (!query) return true;
+      return [r.question, r.answer, r.category]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      if (sort === "question") return a.question.localeCompare(b.question);
+      if (sort === "category") return a.category.localeCompare(b.category) || a.displayOrder - b.displayOrder;
+      return a.displayOrder - b.displayOrder;
+    });
 
   return (
     <>
@@ -49,6 +63,28 @@ export default async function FaqsAdminPage({
       </AdminCard>
 
       <div className="mt-8">
+        <AdminListControls resetHref="/admin/faqs">
+          <Field label="Search">
+            <Input name="q" defaultValue={q} placeholder="Question, answer…" />
+          </Field>
+          <Field label="Category">
+            <Select name="category" defaultValue={category}>
+              <option value="">All categories</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Sort">
+            <Select name="sort" defaultValue={sort}>
+              <option value="order">Display order</option>
+              <option value="question">Question A-Z</option>
+              <option value="category">Category A-Z</option>
+            </Select>
+          </Field>
+        </AdminListControls>
         <AdminTable headers={["Question", "Category", "Order", ""]}>
           {rows.map((r) => (
             <tr key={r.id}>

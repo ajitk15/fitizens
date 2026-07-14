@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
-import { AdminHeading, AdminTable, StatusPill } from "@/components/admin/ui";
+import { AdminHeading, AdminListControls, AdminTable, Field, Input, Select, StatusPill } from "@/components/admin/ui";
 import { setLeadStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -27,17 +27,52 @@ function whatsappHref(phone: string, text: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }
 
-export default async function LeadsAdminPage() {
-  const leads = getDb().select().from(t.leads).orderBy(desc(t.leads.id)).all();
+export default async function LeadsAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; stage?: string; status?: string; followup?: string; sort?: string }>;
+}) {
+  const { q = "", stage = "", status = "", followup = "", sort = "newest" } = await searchParams;
+  const allLeads = getDb().select().from(t.leads).orderBy(desc(t.leads.id)).all();
+  const query = q.trim().toLowerCase();
 
   // Funnel counts for the analytics cards.
-  const count = (stage: string) => leads.filter((l) => l.stage === stage).length;
+  const count = (stage: string) => allLeads.filter((l) => l.stage === stage).length;
   const paid = count("paid");
   const booked = count("booked");
-  const started = leads.length;
-  const staleDetails = leads.filter((l) => l.stage === "details" && minutesSince(l.createdAt) >= 30).length;
-  const paidPending = leads.filter((l) => l.stage === "paid").length;
+  const started = allLeads.length;
+  const staleDetails = allLeads.filter((l) => l.stage === "details" && minutesSince(l.createdAt) >= 30).length;
+  const paidPending = allLeads.filter((l) => l.stage === "paid").length;
   const conversion = started ? Math.round((booked / started) * 100) : 0;
+  const leads = allLeads
+    .filter((l) => {
+      const needsDetailsFollowup = l.stage === "details" && minutesSince(l.createdAt) >= 30;
+      const needsSlotFollowup = l.stage === "paid";
+      if (stage && l.stage !== stage) return false;
+      if (status && l.status !== status) return false;
+      if (followup === "needs" && !needsDetailsFollowup && !needsSlotFollowup) return false;
+      if (!query) return true;
+      return [
+        l.id,
+        l.name,
+        l.whatsapp,
+        l.email,
+        l.goal,
+        l.level,
+        l.message,
+        l.stage,
+        l.status,
+      ]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      if (sort === "oldest") return a.id - b.id;
+      if (sort === "name") return a.name.localeCompare(b.name);
+      if (sort === "stage") return a.stage.localeCompare(b.stage) || b.id - a.id;
+      if (sort === "status") return a.status.localeCompare(b.status) || b.id - a.id;
+      return b.id - a.id;
+    });
   const funnel = [
     { label: "Details captured", value: started },
     { label: "Paid", value: paid + booked },
@@ -61,6 +96,43 @@ export default async function LeadsAdminPage() {
         Booked / started: {conversion}%. Follow up on details-only leads older than 30 minutes
         and paid leads that have not picked a slot.
       </p>
+
+      <AdminListControls resetHref="/admin/leads">
+        <Field label="Search">
+          <Input name="q" defaultValue={q} placeholder="Name, phone, email, goal…" />
+        </Field>
+        <Field label="Stage">
+          <Select name="stage" defaultValue={stage}>
+            <option value="">All stages</option>
+            <option value="details">Details</option>
+            <option value="paid">Paid</option>
+            <option value="booked">Booked</option>
+          </Select>
+        </Field>
+        <Field label="Status">
+          <Select name="status" defaultValue={status}>
+            <option value="">All statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="closed">Closed</option>
+          </Select>
+        </Field>
+        <Field label="Sort">
+          <Select name="sort" defaultValue={sort}>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name A-Z</option>
+            <option value="stage">Stage A-Z</option>
+            <option value="status">Status A-Z</option>
+          </Select>
+        </Field>
+        <Field label="Follow-up">
+          <Select name="followup" defaultValue={followup}>
+            <option value="">All bookings</option>
+            <option value="needs">Needs follow-up only</option>
+          </Select>
+        </Field>
+      </AdminListControls>
 
       <AdminTable headers={["Contact", "Goal / Level", "Message", "Stage", "Payment / booking", "Received", "Status", ""]}>
         {leads.map((l) => {
