@@ -113,8 +113,8 @@ export default async function HomePage() {
           />
           <div className="mt-12 grid gap-8 md:grid-cols-3">
             {programs.map((p) => (
-              <Reveal key={p.slug} delay={p.displayOrder * 0.08}>
-                <ProgramCard program={p} ctaLabel={site.ctaLabel} />
+              <Reveal key={p.slug} delay={p.displayOrder * 0.08} className="h-full">
+                <ProgramCard program={p} />
               </Reveal>
             ))}
           </div>

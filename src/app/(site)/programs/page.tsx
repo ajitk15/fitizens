@@ -55,8 +55,8 @@ export default async function ProgramsPage() {
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid gap-8 md:grid-cols-3">
           {programs.map((p) => (
-            <Reveal key={p.slug} delay={p.displayOrder * 0.08}>
-              <ProgramCard program={p} ctaLabel={site.ctaLabel} />
+            <Reveal key={p.slug} delay={p.displayOrder * 0.08} className="h-full">
+              <ProgramCard program={p} />
             </Reveal>
           ))}
         </div>
