@@ -141,6 +141,10 @@ export default async function LeadsAdminPage({
           const followupText = needsSlotFollowup
             ? `Hi ${l.name}, your FITIZENS consultation payment is received. Please pick your slot, or reply here and I'll help you schedule it. Booking ID: #${l.id}`
             : `Hi ${l.name}, I noticed you started booking a FITIZENS consultation. Do you need help completing payment or choosing a slot? Booking ID: #${l.id}`;
+          const whatsappText =
+            needsDetailsFollowup || needsSlotFollowup
+              ? followupText
+              : `Hi ${l.name}, this is regarding your FITIZENS consultation booking #${l.id}.`;
 
           return (
           <tr key={l.id} className={needsDetailsFollowup || needsSlotFollowup ? "bg-accent/5" : undefined}>
@@ -203,16 +207,18 @@ export default async function LeadsAdminPage({
             </td>
             <td className="px-4 py-3">
               <div className="flex gap-2">
-                {(needsDetailsFollowup || needsSlotFollowup) && (
-                  <a
-                    href={whatsappHref(l.whatsapp, followupText)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg border border-accent px-2 py-1 text-xs text-accent hover:bg-accent hover:text-ink"
-                  >
-                    WhatsApp
-                  </a>
-                )}
+                <a
+                  href={whatsappHref(l.whatsapp, whatsappText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`rounded-lg border px-2 py-1 text-xs ${
+                    needsDetailsFollowup || needsSlotFollowup
+                      ? "border-accent text-accent hover:bg-accent hover:text-ink"
+                      : "border-line text-muted hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  WhatsApp
+                </a>
                 {l.status !== "contacted" && (
                   <form action={setLeadStatusAction.bind(null, l.id, "contacted")}>
                     <button className="rounded-lg border border-line px-2 py-1 text-xs text-muted hover:border-accent hover:text-accent">
