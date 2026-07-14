@@ -46,6 +46,7 @@ src/
 │  ├─ admin/                # built-in admin panel (login + CRUD + audit log)
 │  ├─ api/
 │  │  ├─ lead/              # consultation enquiries → DB + email
+│  │  ├─ booking/booked     # confirmed bookings → Meta WhatsApp notification
 │  │  ├─ subscribe/         # newsletter signups (footer box + form opt-in)
 │  │  └─ admin/upload       # image uploads (content-hashed, stored in DATA_DIR)
 │  └─ uploads/[...path]/    # serves uploaded images
@@ -74,6 +75,9 @@ data/                       # SQLite DB + uploads (gitignored; volume in Docker)
   typography as before.
 - **Graceful degradation**: without SMTP/Instagram keys the site runs fully —
   email logs to console, the Instagram section shows a follow card.
+- **Booking notification**: when Meta WhatsApp Cloud API env vars are set, the
+  trainer receives a WhatsApp template message after a paid Calendly slot is
+  booked. Without them, booking still succeeds and the notification is skipped.
 
 ---
 
@@ -120,6 +124,12 @@ Put a reverse proxy (Caddy/Nginx/Traefik) with TLS in front, and back up the
 See [.env.example](./.env.example). Only `ADMIN_EMAIL` / `ADMIN_PASSWORD` are
 required to get a working site + admin. SMTP (enquiry + newsletter emails) and
 analytics IDs can be added whenever the accounts are ready.
+
+For trainer WhatsApp booking notifications, configure the Meta WhatsApp Cloud
+API variables in `.env.example` and create a template named
+`booking_confirmation_trainer` with nine body variables in this order:
+booking ID, client name, client WhatsApp, email, goal, level, amount, Calendly
+event URL and booked time.
 
 ---
 

@@ -28,6 +28,7 @@ export function CalendlyEmbed({
     const cb = onScheduled;
     if (!cb) return;
     function handle(e: MessageEvent) {
+      if (e.origin !== "https://calendly.com") return;
       if (
         typeof e.data === "object" &&
         e.data !== null &&

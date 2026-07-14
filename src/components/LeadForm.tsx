@@ -59,7 +59,8 @@ const levels = ["Beginner", "Intermediate", "Advanced"];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const STEPS = 4; // qualify · details · payment · book
+const STEPS = 3; // details · payment · book
+const STEP_LABELS = ["Details", "Payment", "Book"];
 
 type PayState = "idle" | "creating" | "open" | "verifying" | "unconfigured" | "error";
 
@@ -72,6 +73,18 @@ function loadRazorpayScript(): Promise<boolean> {
     s.onerror = () => resolve(false);
     document.body.appendChild(s);
   });
+}
+
+function getSourceMeta() {
+  const url = new URL(window.location.href);
+  return {
+    pageUrl: url.toString(),
+    referrer: document.referrer || "",
+    utmSource: url.searchParams.get("utm_source") || "",
+    utmMedium: url.searchParams.get("utm_medium") || "",
+    utmCampaign: url.searchParams.get("utm_campaign") || "",
+    program: url.searchParams.get("program") || "",
+  };
 }
 
 export function LeadForm({
@@ -101,7 +114,6 @@ export function LeadForm({
     if (!g || !(GOAL_VALUES as string[]).includes(g)) return;
     /* eslint-disable react-hooks/set-state-in-effect */
     setForm((f) => ({ ...f, goal: g as Goal }));
-    setStep(1);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
@@ -116,10 +128,22 @@ export function LeadForm({
         ? ""
         : "Enter a valid mobile number for the selected country.";
   const emailError = EMAIL_RE.test(form.email.trim()) ? "" : "Please enter a valid email address.";
-  const detailsValid = !nameError && !whatsappError && !emailError;
+  const detailsValid = !goalError && !nameError && !whatsappError && !emailError;
 
   const fullWhatsapp = phoneToE164(phoneValue) ?? "";
   const priceLabel = `${consultation.currency === "INR" ? "₹" : ""}${consultation.price.toLocaleString("en-IN")}`;
+  const calendlyDirectUrl = calendlyUrl
+    ? (() => {
+        try {
+          const u = new URL(calendlyUrl);
+          if (form.name.trim()) u.searchParams.set("name", form.name.trim());
+          if (form.email.trim()) u.searchParams.set("email", form.email.trim());
+          return u.toString();
+        } catch {
+          return calendlyUrl;
+        }
+      })()
+    : "";
 
   function back() {
     setAttempted(false);
@@ -127,14 +151,8 @@ export function LeadForm({
     setStep((s) => s - 1);
   }
 
-  // Step 0 → validate goal → step 1. Step 1 → create the booking → step 2.
+  // Step 0 → create the booking → step 1.
   async function advanceFromForm() {
-    if (step === 0) {
-      if (goalError) return setAttempted(true);
-      setAttempted(false);
-      return setStep(1);
-    }
-    // step === 1
     if (!detailsValid) return setAttempted(true);
     setAttempted(false);
     setStatus("submitting");
@@ -143,7 +161,12 @@ export function LeadForm({
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, whatsapp: fullWhatsapp, email: form.email.trim() }),
+        body: JSON.stringify({
+          ...form,
+          whatsapp: fullWhatsapp,
+          email: form.email.trim(),
+          source: getSourceMeta(),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.bookingId) {
@@ -151,7 +174,7 @@ export function LeadForm({
       }
       setBookingId(data.bookingId);
       setStatus("idle");
-      setStep(2);
+      setStep(1);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -160,7 +183,7 @@ export function LeadForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (step <= 1) void advanceFromForm();
+    if (step === 0) void advanceFromForm();
   }
 
   /* ---------------- payment ---------------- */
@@ -203,7 +226,7 @@ export function LeadForm({
             });
             if (!v.ok) throw new Error();
             setPayState("idle");
-            setStep(3);
+            setStep(2);
           } catch {
             setPayState("error");
             setPayError("We couldn't confirm your payment. If you were charged, contact us and we'll sort it out.");
@@ -232,7 +255,7 @@ export function LeadForm({
       });
       if (!res.ok) throw new Error();
       setPayState("idle");
-      setStep(3);
+      setStep(2);
     } catch {
       setPayState("unconfigured");
       setPayError("Couldn't skip payment. Please try again.");
@@ -254,7 +277,7 @@ export function LeadForm({
   );
 
   /* ---------------- success ---------------- */
-  if (booked || (step === 3 && !calendlyUrl)) {
+  if (booked || (step === 2 && !calendlyUrl)) {
     return (
       <div className="rounded-2xl border border-accent/40 bg-ink-card p-8 text-center shadow-glow">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-accent">
@@ -268,9 +291,10 @@ export function LeadForm({
         <p className="mt-2 text-muted">
           {booked
             ? `Thanks ${form.name.split(" ")[0]} — check your email for the confirmation and calendar invite. See you on the call!`
-            : "Thanks — I'll email you to lock in a time for your consultation."}
+            : "Payment is received. I'll email you to lock in a time for your consultation."}
           {form.subscribe && " You're also on the newsletter list — welcome!"}
         </p>
+        {bookingId && <p className="mt-3 text-xs text-muted/70">Booking ID: #{bookingId}</p>}
       </div>
     );
   }
@@ -278,13 +302,22 @@ export function LeadForm({
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl border border-line bg-ink-card p-6 sm:p-8">
       {/* Progress */}
-      <div className="mb-6 flex items-center gap-2">
-        {Array.from({ length: STEPS }, (_, s) => (
-          <div
-            key={s}
-            className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-accent" : "bg-line"}`}
-          />
-        ))}
+      <div className="mb-6" aria-label="Booking progress">
+        <div className="flex items-center gap-2">
+          {Array.from({ length: STEPS }, (_, s) => (
+            <div
+              key={s}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-accent" : "bg-line"}`}
+            />
+          ))}
+        </div>
+        <div className="mt-2 grid grid-cols-3 text-center text-xs text-muted">
+          {STEP_LABELS.map((label, index) => (
+            <span key={label} className={index === step ? "text-accent" : ""}>
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -297,13 +330,14 @@ export function LeadForm({
         >
           {step === 0 && (
             <fieldset className="space-y-5">
-              <legend className="font-display text-xl uppercase">What&apos;s your main goal?</legend>
+              <legend className="font-display text-xl uppercase">Tell me about your goal</legend>
               <div className="grid grid-cols-2 gap-3">
                 {goals.map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => update({ goal: g })}
+                    aria-pressed={form.goal === g}
                     className={`rounded-xl border px-4 py-4 text-sm font-medium transition-colors ${
                       form.goal === g
                         ? "border-accent bg-accent/10 text-accent"
@@ -323,6 +357,7 @@ export function LeadForm({
                       key={l}
                       type="button"
                       onClick={() => update({ level: form.level === l ? "" : l })}
+                      aria-pressed={form.level === l}
                       className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                         form.level === l
                           ? "border-accent bg-accent text-ink"
@@ -334,15 +369,10 @@ export function LeadForm({
                   ))}
                 </div>
               </div>
-            </fieldset>
-          )}
-
-          {step === 1 && (
-            <fieldset className="space-y-5">
-              <legend className="font-display text-xl uppercase">Your details</legend>
               <Field label="Full name" required>
                 <input
                   type="text"
+                  required
                   value={form.name}
                   onChange={(e) => update({ name: e.target.value })}
                   className={inputCls(attempted && !!nameError)}
@@ -362,6 +392,7 @@ export function LeadForm({
               <Field label="Email" required>
                 <input
                   type="email"
+                  required
                   value={form.email}
                   onChange={(e) => update({ email: e.target.value })}
                   className={inputCls(attempted && !!emailError)}
@@ -394,16 +425,18 @@ export function LeadForm({
             </fieldset>
           )}
 
-          {step === 2 && (
+          {step === 1 && (
             <div className="space-y-5">
-              <legend className="font-display text-xl uppercase">Secure your slot</legend>
+              <h3 className="font-display text-xl uppercase">Secure your slot</h3>
               <div className="rounded-xl border border-line bg-ink px-4 py-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm text-muted">Consultation call · {consultation.durationLabel}</span>
                   <span className="font-display text-2xl text-accent">{priceLabel}</span>
                 </div>
-                <p className="mt-2 text-xs text-muted/70">
-                  Pay to confirm, then pick a time that works for you on the next step.
+                {bookingId && <p className="mt-2 text-xs text-muted/70">Booking ID: #{bookingId}</p>}
+                <p className="mt-2 text-sm text-muted">
+                  Pay to confirm. You&apos;ll immediately pick a time on the next step.
+                  If payment succeeds but scheduling fails, use your booking ID when contacting us.
                 </p>
               </div>
 
@@ -450,24 +483,40 @@ export function LeadForm({
                           : `Pay ${priceLabel} & continue`}
                   </Button>
                   {payError && <p className="text-sm text-bad">{payError}</p>}
-                  <p className="text-center text-xs text-muted/60">Payments are processed securely by Razorpay.</p>
+                  <p className="text-center text-xs text-muted/60">
+                    Payments are processed securely by Razorpay. The fee is adjusted against your
+                    coaching package if you enrol.
+                  </p>
                 </>
               )}
             </div>
           )}
 
-          {step === 3 && calendlyUrl && (
+          {step === 2 && calendlyUrl && (
             <div className="space-y-4">
-              <legend className="font-display text-xl uppercase">Pick your time</legend>
+              <h3 className="font-display text-xl uppercase">Pick your time</h3>
               <p className="text-sm text-muted">
                 Payment received. Choose a slot below — you&apos;ll get a confirmation email and
                 calendar invite instantly.
               </p>
+              {bookingId && <p className="text-xs text-muted/70">Booking ID: #{bookingId}</p>}
+              <a
+                href={calendlyDirectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex rounded-full border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-ink"
+              >
+                Open Calendly in a new tab
+              </a>
               <CalendlyEmbed
                 url={calendlyUrl}
                 prefill={{ name: form.name, email: form.email.trim() }}
                 onScheduled={handleScheduled}
               />
+              <p className="text-xs text-muted/70">
+                If the scheduler does not load, use the Calendly button above or message us with
+                your booking ID.
+              </p>
             </div>
           )}
         </motion.div>
@@ -487,25 +536,23 @@ export function LeadForm({
         </label>
       </div>
 
-      {status === "error" && <p className="mt-4 text-sm text-bad">{error}</p>}
+      {status === "error" && (
+        <p className="mt-4 text-sm text-bad" aria-live="polite">
+          {error}
+        </p>
+      )}
 
-      {/* Navigation — only the form steps (0,1) have Back/Continue here; payment
+      {/* Navigation — only the details step has Back/Continue here; payment
           and booking drive their own progression. */}
-      {step <= 1 && (
+      {step === 0 && (
         <div className="mt-6 flex items-center justify-between gap-3">
-          {step > 0 ? (
-            <Button key="back" type="button" variant="ghost" onClick={back}>
-              ← Back
-            </Button>
-          ) : (
-            <span />
-          )}
+          <span />
           <Button key="continue" type="submit" disabled={status === "submitting"}>
-            {status === "submitting" ? "Saving…" : step === 1 ? "Continue to payment →" : "Continue →"}
+            {status === "submitting" ? "Saving…" : "Continue to payment →"}
           </Button>
         </div>
       )}
-      {step === 2 && (
+      {step === 1 && (
         <div className="mt-6">
           <Button type="button" variant="ghost" onClick={back}>
             ← Back

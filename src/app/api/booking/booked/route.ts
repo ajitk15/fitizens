@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
-import { notifyBookingWebhook } from "@/lib/webhook";
+import { getTrainer } from "@/lib/content";
+import { notifyTrainerOnWhatsApp } from "@/lib/whatsapp";
 
 /**
  * Marks a booking `booked` once the client schedules a Calendly slot (the
@@ -49,18 +50,20 @@ export async function POST(request: Request) {
     ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
   });
 
-  // Push the confirmed booking (incl. the validated WhatsApp number) to an
-  // external automation — e.g. a Zapier hook that notifies the trainer.
-  await notifyBookingWebhook({
-    event: "booking.confirmed",
+  // Notify the trainer directly on WhatsApp via Meta WhatsApp Cloud API.
+  const trainer = await getTrainer();
+  await notifyTrainerOnWhatsApp({
     bookingId,
     name: booking.name,
     whatsapp: booking.whatsapp,
     email: booking.email,
     goal: booking.goal,
     level: booking.level,
+    amountPaise: booking.amountPaise,
+    currency: booking.currency,
     calendlyEventUri: uri,
     bookedAt,
+    trainerWhatsapp: trainer.whatsapp,
   });
 
   return NextResponse.json({ ok: true });

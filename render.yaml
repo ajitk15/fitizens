@@ -44,7 +44,16 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
-      # Optional — Zapier Catch Hook URL; each confirmed booking is POSTed here
-      # (e.g. to send the trainer a WhatsApp). No-op when unset.
-      - key: ZAPIER_BOOKING_WEBHOOK_URL
+      # Optional — Meta WhatsApp Cloud API trainer booking notifications.
+      - key: META_WHATSAPP_ACCESS_TOKEN
         sync: false
+      - key: META_WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: META_WHATSAPP_TO
+        sync: false
+      - key: META_WHATSAPP_TEMPLATE_NAME
+        value: booking_confirmation_trainer
+      - key: META_WHATSAPP_TEMPLATE_LANGUAGE
+        value: en_US
+      - key: META_GRAPH_API_VERSION
+        value: v23.0

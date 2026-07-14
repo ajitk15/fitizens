@@ -25,7 +25,19 @@ interface LeadPayload {
   message?: string;
   /** Newsletter opt-in from the form checkbox. */
   subscribe?: boolean;
+  source?: {
+    pageUrl?: string;
+    referrer?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    program?: string;
+  };
   company?: string; // honeypot
+}
+
+function cleanMeta(value: unknown) {
+  return typeof value === "string" ? value.trim().slice(0, 500) : "";
 }
 
 export async function POST(request: Request) {
@@ -67,6 +79,14 @@ export async function POST(request: Request) {
     goal: body.goal || "—",
     level: body.level || "—",
     message: body.message?.trim() || "—",
+    source: {
+      pageUrl: cleanMeta(body.source?.pageUrl),
+      referrer: cleanMeta(body.source?.referrer),
+      utmSource: cleanMeta(body.source?.utmSource),
+      utmMedium: cleanMeta(body.source?.utmMedium),
+      utmCampaign: cleanMeta(body.source?.utmCampaign),
+      program: cleanMeta(body.source?.program),
+    },
     receivedAt: new Date().toISOString(),
   };
 
@@ -135,7 +155,16 @@ export async function POST(request: Request) {
       `Level: ${lead.level}`,
       `Message: ${lead.message}`,
       `Newsletter opt-in: ${body.subscribe ? "yes" : "no"}`,
+      `Page: ${lead.source.pageUrl || "—"}`,
+      `Referrer: ${lead.source.referrer || "—"}`,
+      `UTM: ${
+        [lead.source.utmSource, lead.source.utmMedium, lead.source.utmCampaign]
+          .filter(Boolean)
+          .join(" / ") || "—"
+      }`,
+      `Program source: ${lead.source.program || "—"}`,
       ``,
+      `Booking ID: #${bookingId}`,
       `Stage: details (payment + slot booking to follow)`,
       `Received: ${lead.receivedAt}`,
     ].join("\n"),
