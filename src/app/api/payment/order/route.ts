@@ -9,6 +9,7 @@ import {
   createRazorpayOrder,
   paymentBypassAllowed,
 } from "@/lib/razorpay";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Creates a Razorpay order for a consultation booking. The amount is derived
@@ -16,6 +17,14 @@ import {
  * `{ configured: false }` when Razorpay keys aren't set so the UI can degrade.
  */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "payment_order", { limit: 20, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many payment attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   if (!razorpayConfigured()) {
     const adminToggle = getTestPaymentEnabled();
     return NextResponse.json({ configured: false, bypassAllowed: paymentBypassAllowed(adminToggle) });

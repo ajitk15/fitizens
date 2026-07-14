@@ -8,6 +8,7 @@ import type Database from "better-sqlite3";
 
 const SINGLETON_TABLES = ["trainer", "consultation", "siteSettings"] as const;
 const LIST_TABLES = ["stats", "programs", "testimonials", "faqs", "socials"] as const;
+const MAX_IMPORT_BYTES = 1024 * 1024; // content exports are small; reject oversized uploads
 
 const tableMap = {
   trainer: t.trainer,
@@ -20,6 +21,33 @@ const tableMap = {
   siteSettings: t.siteSettings,
 } as const;
 
+const allowedTables = new Set<string>([...SINGLETON_TABLES, ...LIST_TABLES]);
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function validateImportTables(tables: Record<string, unknown>): string | null {
+  for (const key of Object.keys(tables)) {
+    if (!allowedTables.has(key)) return `Unsupported table "${key}"`;
+  }
+
+  for (const key of SINGLETON_TABLES) {
+    const row = tables[key];
+    if (row != null && !isPlainRecord(row)) return `"${key}" must be an object or null`;
+  }
+
+  for (const key of LIST_TABLES) {
+    const rows = tables[key];
+    if (rows == null) continue;
+    if (!Array.isArray(rows)) return `"${key}" must be an array`;
+    if (rows.length > 500) return `"${key}" has too many rows`;
+    if (!rows.every(isPlainRecord)) return `"${key}" rows must be objects`;
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   const admin = await requireAdmin();
 
@@ -27,6 +55,9 @@ export async function POST(req: Request) {
   const file = formData.get("file");
   if (!file || !(file instanceof File)) {
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+  }
+  if (file.size > MAX_IMPORT_BYTES) {
+    return NextResponse.json({ error: "Import file is too large" }, { status: 400 });
   }
 
   let data: { version?: number; tables?: Record<string, unknown> };
@@ -42,6 +73,10 @@ export async function POST(req: Request) {
       { error: "Invalid export file: must have version 1 and a tables object" },
       { status: 400 },
     );
+  }
+  const validationError = validateImportTables(data.tables);
+  if (validationError) {
+    return NextResponse.json({ error: `Invalid export file: ${validationError}` }, { status: 400 });
   }
 
   const db = getDb();

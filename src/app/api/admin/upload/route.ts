@@ -9,6 +9,7 @@ import { uploadsDir } from "@/db";
 import { imageSpec } from "@/lib/image-specs";
 
 const MAX_BYTES = 12 * 1024 * 1024; // 12 MB input cap; output is far smaller
+const MAX_PIXELS = 24_000_000; // defend against huge dimensions / decompression bombs
 const ACCEPTED = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 /**
@@ -37,7 +38,13 @@ export async function POST(request: Request) {
   const spec = imageSpec(kind);
   let processed: Buffer;
   try {
-    processed = await sharp(Buffer.from(await file.arrayBuffer()))
+    const input = Buffer.from(await file.arrayBuffer());
+    const image = sharp(input, { limitInputPixels: MAX_PIXELS });
+    const meta = await image.metadata();
+    if (meta.width && meta.height && meta.width * meta.height > MAX_PIXELS) {
+      return NextResponse.json({ error: "Image dimensions are too large." }, { status: 400 });
+    }
+    processed = await image
       .rotate() // honor EXIF orientation before it is stripped
       .resize({ width: spec.maxW, height: spec.maxH, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 82 })

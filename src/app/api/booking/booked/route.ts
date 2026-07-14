@@ -4,6 +4,8 @@ import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { getTrainer } from "@/lib/content";
 import { notifyTrainerOnWhatsApp } from "@/lib/whatsapp";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyCalendlyEventUri } from "@/lib/calendly";
 
 /**
  * Marks a booking `booked` once the client schedules a Calendly slot (the
@@ -11,6 +13,14 @@ import { notifyTrainerOnWhatsApp } from "@/lib/whatsapp";
  * spoofed call can't skip payment.
  */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "booking_booked", { limit: 20, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many booking attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   let body: { bookingId?: number; calendlyEventUri?: string };
   try {
     body = await request.json();
@@ -36,6 +46,10 @@ export async function POST(request: Request) {
   }
 
   const uri = typeof body.calendlyEventUri === "string" ? body.calendlyEventUri.slice(0, 500) : null;
+  if (!(await verifyCalendlyEventUri(uri))) {
+    return NextResponse.json({ error: "Calendly booking could not be verified." }, { status: 400 });
+  }
+
   const bookedAt = new Date().toISOString();
   db.update(t.leads)
     .set({ stage: "booked", bookedAt, calendlyEventUri: uri })

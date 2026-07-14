@@ -10,7 +10,9 @@ export type Db = BetterSQLite3Database<typeof schema>;
 
 /** All persistent state (DB + uploads) lives under DATA_DIR — one Docker volume. */
 export function dataDir(): string {
-  return path.resolve(process.env.DATA_DIR || "./data");
+  return process.env.DATA_DIR
+    ? path.resolve(process.env.DATA_DIR)
+    : path.join(/* turbopackIgnore: true */ process.cwd(), "data");
 }
 
 export function uploadsDir(): string {
@@ -22,7 +24,7 @@ export function uploadsDir(): string {
  * In dev it's the repo-root ./drizzle directory.
  */
 function migrationsFolder(): string {
-  return path.resolve(process.cwd(), "drizzle");
+  return path.join(/* turbopackIgnore: true */ process.cwd(), "drizzle");
 }
 
 // Survive Next.js dev-mode HMR: keep the handle on globalThis.

@@ -4,6 +4,7 @@ import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { getConsultation, getTestPaymentEnabled } from "@/lib/content";
 import { paymentBypassAllowed } from "@/lib/razorpay";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Test-only: marks a booking `paid` without a real charge so the rest of the
@@ -11,6 +12,14 @@ import { paymentBypassAllowed } from "@/lib/razorpay";
  * unless `paymentBypassAllowed()` (never in production with keys set).
  */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "payment_bypass", { limit: 10, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   if (!paymentBypassAllowed(getTestPaymentEnabled())) {
     return NextResponse.json({ error: "Not available." }, { status: 403 });
   }

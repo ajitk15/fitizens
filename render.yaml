@@ -44,6 +44,9 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+      # Optional — verifies Calendly scheduled-event URIs before marking booked.
+      - key: CALENDLY_ACCESS_TOKEN
+        sync: false
       # Optional — Meta WhatsApp Cloud API trainer booking notifications.
       - key: META_WHATSAPP_ACCESS_TOKEN
         sync: false

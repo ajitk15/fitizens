@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb, schema as t } from "@/db";
 import { audit } from "@/lib/audit";
 import { verifyPaymentSignature } from "@/lib/razorpay";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Verifies a Razorpay checkout signature (HMAC over orderId|paymentId) and
@@ -10,6 +11,14 @@ import { verifyPaymentSignature } from "@/lib/razorpay";
  * is rejected and the stage is left unchanged.
  */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "payment_verify", { limit: 30, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many payment verification attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   let body: {
     bookingId?: number;
     razorpay_order_id?: string;

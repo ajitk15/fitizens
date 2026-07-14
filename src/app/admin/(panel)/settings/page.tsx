@@ -162,8 +162,8 @@ export default async function SettingsAdminPage({
               defaultChecked={settings?.testPaymentEnabled ?? false}
             />
             <p className="mt-1 text-xs text-warn/80">
-              When on, visitors can skip the payment step and proceed directly to booking.
-              Use for testing only — turn off before going live.
+              Only works outside production. Live deployments never allow payment bypass,
+              even if this box is checked.
             </p>
           </div>
         </AdminCard>

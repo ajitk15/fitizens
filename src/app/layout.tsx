@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Anton, Inter } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
@@ -53,17 +54,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${anton.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
-      <head>
-        {/* Apply the stored theme before paint — no flash. Dark is the default. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{if(localStorage.getItem('fitizens_theme')==='light')document.documentElement.classList.add('light')}catch(e){}",
-          }}
-        />
-      </head>
+    <html
+      lang="en"
+      className={`${anton.variable} ${inter.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body className="flex min-h-full flex-col bg-ink text-fg">
+        <Script id="theme-before-paint" strategy="beforeInteractive">
+          {`try{if(localStorage.getItem('fitizens_theme')==='light')document.documentElement.classList.add('light')}catch(e){}`}
+        </Script>
         {children}
         <Analytics />
       </body>

@@ -53,7 +53,8 @@ function countryOptions(): CountryOption[] {
       calling: getCountryCallingCode(code),
       flag: flag(code),
     }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    // Deterministic across server/browser ICU data to avoid hydration mismatch.
+    .sort((a, b) => a.code.localeCompare(b.code));
   return CACHED;
 }
 

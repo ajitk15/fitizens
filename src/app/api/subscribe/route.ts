@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { upsertSubscriber } from "@/lib/newsletter";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Newsletter signup (footer subscribe box). Honeypot-guarded; always returns
  * ok for well-formed emails so addresses can't be enumerated.
  */
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "subscribe", { limit: 10, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   let body: { email?: string; name?: string; company?: string };
   try {
     body = await request.json();

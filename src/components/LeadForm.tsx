@@ -105,6 +105,7 @@ export function LeadForm({
   const [payError, setPayError] = useState("");
   const [bypassAllowed, setBypassAllowed] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [bookingError, setBookingError] = useState("");
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -266,12 +267,20 @@ export function LeadForm({
   const handleScheduled = useCallback(
     (payload: { event?: { uri?: string } }) => {
       if (!bookingId) return;
+      setBookingError("");
       void fetch("/api/booking/booked", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId, calendlyEventUri: payload?.event?.uri }),
+      }).then((res) => {
+        if (res.ok) {
+          setBooked(true);
+        } else {
+          setBookingError("The slot was selected, but we couldn't verify it. Please contact us with your booking ID.");
+        }
+      }).catch(() => {
+        setBookingError("The slot was selected, but we couldn't verify it. Please contact us with your booking ID.");
       });
-      setBooked(true);
     },
     [bookingId],
   );
@@ -517,6 +526,11 @@ export function LeadForm({
                 If the scheduler does not load, use the Calendly button above or message us with
                 your booking ID.
               </p>
+              {bookingError && (
+                <p className="rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn" aria-live="polite">
+                  {bookingError}
+                </p>
+              )}
             </div>
           )}
         </motion.div>

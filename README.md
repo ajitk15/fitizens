@@ -78,6 +78,9 @@ data/                       # SQLite DB + uploads (gitignored; volume in Docker)
 - **Booking notification**: when Meta WhatsApp Cloud API env vars are set, the
   trainer receives a WhatsApp template message after a paid Calendly slot is
   booked. Without them, booking still succeeds and the notification is skipped.
+- **Booking verification**: `CALENDLY_ACCESS_TOKEN` is required in production
+  so the server verifies Calendly event URIs before marking paid bookings as
+  booked.
 
 ---
 
@@ -130,6 +133,10 @@ API variables in `.env.example` and create a template named
 `booking_confirmation_trainer` with nine body variables in this order:
 booking ID, client name, client WhatsApp, email, goal, level, amount, Calendly
 event URL and booked time.
+
+For production booking integrity, set `CALENDLY_ACCESS_TOKEN`; without it, paid
+bookings cannot be marked as booked. Test payment bypass is ignored in
+production builds even if the admin setting is checked.
 
 ---
 

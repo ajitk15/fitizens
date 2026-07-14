@@ -5,6 +5,7 @@ import { audit } from "@/lib/audit";
 import { getTrainer } from "@/lib/content";
 import { sendMail } from "@/lib/mail";
 import { upsertSubscriber } from "@/lib/newsletter";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Consultation booking — step 1 (contact capture).
@@ -41,6 +42,14 @@ function cleanMeta(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "lead", { limit: 8, windowMs: 15 * 60 * 1000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    );
+  }
+
   let body: LeadPayload;
   try {
     body = await request.json();
